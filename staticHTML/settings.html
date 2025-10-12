@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки профиля - AnswerHub</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">AnswerHub</a>
+
+                <form class="search-form">
+                    <input type="text" class="search-input" placeholder="Поиск вопросов...">
+                </form>
+
+                <div class="user-menu">
+                    <span class="user-greeting">Привет, username!</span>
+                    <a href="index.html" class="btn btn-outline">На главную</a>
+                    <a href="#" class="btn btn-outline">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="main-layout">
+            <div class="content">
+                <div class="settings-container">
+                    <h1>Настройки профиля</h1>
+
+                    <form class="settings-form">
+                        <!-- Аватар -->
+                        <div class="form-group">
+                            <label class="form-label">Аватар</label>
+                            <div class="avatar-section">
+                                <div class="avatar-preview">
+                                    <div class="avatar-image">
+                                        <img src="../img/avatar-placeholder.jpg" alt="Текущий аватар" class="avatar-img">
+                                    </div>
+                                    <div class="avatar-actions">
+                                        <div class="file-upload">
+                                            <input type="file" id="avatar-upload" class="file-input" accept="image/*">
+                                            <label for="avatar-upload" class="btn btn-outline">Изменить аватар</label>
+                                        </div>
+                                        <button type="button" class="btn btn-outline btn-danger">Удалить</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Электронная почта -->
+                        <div class="form-group">
+                            <label for="settings-email" class="form-label">Электронная почта</label>
+                            <input type="email" id="settings-email" class="form-input" value="user@example.com">
+                            <div class="form-error">Введите корректный email адрес</div>
+                        </div>
+
+                        <!-- Никнейм -->
+                        <div class="form-group">
+                            <label for="settings-username" class="form-label">Никнейм</label>
+                            <input type="text" id="settings-username" class="form-input" value="username">
+                            <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
+                        </div>
+
+                        <!-- Смена пароля -->
+                        <div class="form-group">
+                            <label class="form-label">Смена пароля</label>
+                            <div class="password-fields">
+                                <input type="password" class="form-input" placeholder="Текущий пароль" style="margin-bottom: 0.5rem;">
+                                <input type="password" class="form-input" placeholder="Новый пароль" style="margin-bottom: 0.5rem;">
+                                <input type="password" class="form-input" placeholder="Подтвердите новый пароль">
+                            </div>
+                            <div class="form-hint">Оставьте пустым, если не хотите менять пароль</div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">Сохранить изменения</button>
+                            <a href="index.html" class="btn btn-outline">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <h3>Статистика профиля</h3>
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <span class="stat-label">Заданные вопросы:</span>
+                            <span class="stat-value">24</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Данные ответы:</span>
+                            <span class="stat-value">156</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Полученные голоса:</span>
+                            <span class="stat-value">1,245</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Репутация:</span>
+                            <span class="stat-value reputation">1,089</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Безопасность</h3>
+                    <div class="security-tips">
+                        <p>• Используйте сложный пароль</p>
+                        <p>• Не передавайте данные для входа</p>
+                        <p>• Регулярно обновляйте пароль</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">AnswerHub</h4>
+                    <p class="footer-description">
+                        Сообщество разработчиков, где можно задавать вопросы, находить ответы и делиться знаниями.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="GitHub">
+                            <span class="social-icon">🐙</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <span class="social-icon">🐦</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Telegram">
+                            <span class="social-icon">✈️</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Разделы</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html" class="footer-link">Главная</a></li>
+                        <li><a href="ask.html" class="footer-link">Задать вопрос</a></li>
+                        <li><a href="tag.html" class="footer-link">Теги</a></li>
+                        <li><a href="#" class="footer-link">Лучшие вопросы</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Помощь</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">О проекте</a></li>
+                        <li><a href="#" class="footer-link">Правила сообщества</a></li>
+                        <li><a href="#" class="footer-link">Частые вопросы</a></li>
+                        <li><a href="#" class="footer-link">Обратная связь</a></li>
+                        <li><a href="#" class="footer-link">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Технологии</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Python</a></li>
+                        <li><a href="#" class="footer-link">Django</a></li>
+                        <li><a href="#" class="footer-link">Docker</a></li>
+                        <li><a href="#" class="footer-link">JavaScript</a></li>
+                        <li><a href="#" class="footer-link">Базы данных</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    © 2025 AnswerHub. Все права защищены.
+                </div>
+                <div class="footer-stats">
+                    <span class="stat">Вопросы: 100,000+</span>
+                    <span class="stat">Ответы: 1,000,000+</span>
+                    <span class="stat">Пользователи: 10,000+</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - AnswerHub</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">AnswerHub</a>
+
+                <form class="search-form">
+                    <input type="text" class="search-input" placeholder="Поиск вопросов...">
+                </form>
+
+                <div class="user-menu">
+                    <a href="login.html" class="btn btn-outline">Войти</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h1>Регистрация</h1>
+                <p class="auth-subtitle">Присоединяйтесь к сообществу AnswerHub</p>
+
+                <form class="auth-form">
+                    <!-- Электронная почта -->
+                    <div class="form-group">
+                        <label for="signup-email" class="form-label">Электронная почта</label>
+                        <input type="email" id="signup-email" class="form-input" placeholder="example@mail.com">
+                        <div class="form-error">Введите корректный email адрес</div>
+                    </div>
+
+                    <!-- Никнейм -->
+                    <div class="form-group">
+                        <label for="signup-username" class="form-label">Никнейм</label>
+                        <input type="text" id="signup-username" class="form-input" placeholder="Придумайте уникальный никнейм">
+                        <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
+                    </div>
+
+                    <!-- Аватар -->
+                    <div class="form-group">
+                        <label for="signup-avatar" class="form-label">Аватар (необязательно)</label>
+                        <div class="file-upload">
+                            <input type="file" id="signup-avatar" class="file-input" accept="image/*">
+                            <label for="signup-avatar" class="file-label">
+                                <span class="file-text">Выберите файл</span>
+                                <span class="btn btn-outline">Загрузить</span>
+                            </label>
+                        </div>
+                        <div class="form-hint">Рекомендуемый размер: 200x200 пикселей</div>
+                    </div>
+
+                    <!-- Пароль -->
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Пароль</label>
+                        <input type="password" id="signup-password" class="form-input" placeholder="Не менее 8 символов">
+                        <div class="form-error">Пароль должен содержать не менее 8 символов</div>
+                    </div>
+
+                    <!-- Подтверждение пароля -->
+                    <div class="form-group">
+                        <label for="signup-password-confirm" class="form-label">Подтверждение пароля</label>
+                        <input type="password" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль">
+                        <div class="form-error">Пароли не совпадают</div>
+                    </div>
+
+                    <!-- Кнопка регистрации -->
+                    <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
+                </form>
+
+                <div class="auth-links">
+                    <p>Уже есть аккаунт? <a href="login.html" class="auth-link">Войдите</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

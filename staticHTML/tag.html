@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вопросы с тегом [docker] - AnswerHub</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">AnswerHub</a>
+
+                <form class="search-form">
+                    <input type="text" class="search-input" placeholder="Поиск вопросов...">
+                </form>
+
+                <div class="user-menu">
+                    <a href="login.html" class="btn btn-outline">Войти</a>
+                    <a href="signup.html" class="btn btn-primary">Регистрация</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="main-layout">
+            <div class="content">
+                <!-- Заголовок тега -->
+                <div class="tag-header">
+                    <div class="tag-badge large">
+                        <span class="tag-name">docker</span>
+                    </div>
+                    <h1>Вопросы с тегом [docker]</h1>
+                    <p class="tag-description">Docker — программное обеспечение для автоматизации развёртывания и управления приложениями в средах с поддержкой контейнеризации.</p>
+                </div>
+
+                <!-- Сортировка -->
+
+                <div class="sorting-options">
+                    <span class="sort-label">Сортировка:</span>
+
+                    <div class="sort-buttons">
+                        <button class="sort-btn active" data-sort="rating">
+                            <span class="sort-icon">🔥</span>
+                            По рейтингу
+                        </button>
+                        <button class="sort-btn" data-sort="date">
+                            <span class="sort-icon">🕒</span>
+                            По дате
+                        </button>
+                    </div>
+
+                    <div class="sort-order">
+                        <button class="order-btn active" data-order="desc" title="По убыванию">
+                            ↓
+                        </button>
+                        <button class="order-btn" data-order="asc" title="По возрастанию">
+                            ↑
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Список вопросов -->
+                <div class="questions-list">
+                    <div class="question-card">
+                        <div class="vote-buttons">
+                            <button class="vote-btn vote-up">↑</button>
+                            <span class="vote-count">15</span>
+                            <button class="vote-btn vote-down">↓</button>
+                        </div>
+
+                        <div class="question-content">
+                            <h3><a href="question.html">Как правильно настроить Docker для Django проекта?</a></h3>
+                            <p>Пытаюсь настроить Docker для моего Django приложения, но возникают проблемы с миграциями и статическими файлами. Какие best practices существуют для такой настройки?</p>
+
+                            <div class="tags">
+                                <a href="tag.html" class="tag">docker</a>
+                                <a href="tag.html" class="tag">django</a>
+                                <a href="tag.html" class="tag">python</a>
+                            </div>
+
+                            <div class="meta">
+                                <span>спросил 2 часа назад</span>
+                                <span>15 ответов</span>
+                                <span>user123</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="vote-buttons">
+                            <button class="vote-btn vote-up">↑</button>
+                            <span class="vote-count">8</span>
+                            <button class="vote-btn vote-down">↓</button>
+                        </div>
+
+                        <div class="question-content">
+                            <h3><a href="question.html">Docker Compose vs Dockerfile - в чем разница?</a></h3>
+                            <p>Не могу понять, когда использовать Dockerfile, а когда Docker Compose. Можете объяснить разницу и примеры использования?</p>
+
+                            <div class="tags">
+                                <a href="tag.html" class="tag">docker</a>
+                                <a href="tag.html" class="tag">docker-compose</a>
+                                <a href="tag.html" class="tag">containers</a>
+                            </div>
+
+                            <div class="meta">
+                                <span>спросил 5 часов назад</span>
+                                <span>7 ответов</span>
+                                <span>dev_learner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Пагинация -->
+                <div class="pagination">
+                    <a href="#" class="page-link disabled">
+                        <span class="page-arrow">←</span>
+                        Назад
+                    </a>
+
+                    <div class="page-numbers">
+                        <a href="#" class="page-link active">1</a>
+                        <a href="#" class="page-link">2</a>
+                        <a href="#" class="page-link">3</a>
+                        <span class="page-ellipsis">...</span>
+                        <a href="#" class="page-link">8</a>
+                        <a href="#" class="page-link">9</a>
+                        <a href="#" class="page-link">10</a>
+                    </div>
+
+                    <a href="#" class="page-link">
+                        Вперед
+                        <span class="page-arrow">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <h3>Похожие теги</h3>
+                    <div class="tags">
+                        <a href="tag.html" class="tag">docker-compose</a>
+                        <a href="tag.html" class="tag">kubernetes</a>
+                        <a href="tag.html" class="tag">containers</a>
+                        <a href="tag.html" class="tag">devops</a>
+                        <a href="tag.html" class="tag">deployment</a>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Статистика тега</h3>
+                    <div class="tag-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Всего вопросов:</span>
+                            <span class="stat-value">1,247</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">За сегодня:</span>
+                            <span class="stat-value">12</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">За неделю:</span>
+                            <span class="stat-value">89</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">AnswerHub</h4>
+                    <p class="footer-description">
+                        Сообщество разработчиков, где можно задавать вопросы, находить ответы и делиться знаниями.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="GitHub">
+                            <span class="social-icon">🐙</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <span class="social-icon">🐦</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Telegram">
+                            <span class="social-icon">✈️</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Разделы</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html" class="footer-link">Главная</a></li>
+                        <li><a href="ask.html" class="footer-link">Задать вопрос</a></li>
+                        <li><a href="tag.html" class="footer-link">Теги</a></li>
+                        <li><a href="#" class="footer-link">Лучшие вопросы</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Помощь</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">О проекте</a></li>
+                        <li><a href="#" class="footer-link">Правила сообщества</a></li>
+                        <li><a href="#" class="footer-link">Частые вопросы</a></li>
+                        <li><a href="#" class="footer-link">Обратная связь</a></li>
+                        <li><a href="#" class="footer-link">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Технологии</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Python</a></li>
+                        <li><a href="#" class="footer-link">Django</a></li>
+                        <li><a href="#" class="footer-link">Docker</a></li>
+                        <li><a href="#" class="footer-link">JavaScript</a></li>
+                        <li><a href="#" class="footer-link">Базы данных</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    © 2025 AnswerHub. Все права защищены.
+                </div>
+                <div class="footer-stats">
+                    <span class="stat">Вопросы: 100,000+</span>
+                    <span class="stat">Ответы: 1,000,000+</span>
+                    <span class="stat">Пользователи: 10,000+</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
