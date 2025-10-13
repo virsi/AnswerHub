@@ -31,10 +31,10 @@
                 <div class="settings-container">
                     <h1>Настройки профиля</h1>
 
-                    <form class="settings-form">
+                    <form class="settings-form" enctype="multipart/form-data" method="post">
                         <!-- Аватар -->
                         <div class="form-group">
-                            <label class="form-label">Аватар</label>
+                            <label class="form-label optional">Аватар</label>
                             <div class="avatar-section">
                                 <div class="avatar-preview">
                                     <div class="avatar-image">
@@ -42,7 +42,7 @@
                                     </div>
                                     <div class="avatar-actions">
                                         <div class="file-upload">
-                                            <input type="file" id="avatar-upload" class="file-input" accept="image/*">
+                                            <input type="file" id="avatar-upload" class="file-input" accept="image/*" name="avatar">
                                             <label for="avatar-upload" class="btn btn-outline">Изменить аватар</label>
                                         </div>
                                         <button type="button" class="btn btn-outline btn-danger">Удалить</button>
@@ -54,24 +54,24 @@
                         <!-- Электронная почта -->
                         <div class="form-group">
                             <label for="settings-email" class="form-label">Электронная почта</label>
-                            <input type="email" id="settings-email" class="form-input" value="user@example.com" required>
+                            <input type="email" id="settings-email" class="form-input" value="user@example.com" required name="email">
                             <div class="form-error">Введите корректный email адрес</div>
                         </div>
 
                         <!-- Никнейм -->
                         <div class="form-group">
                             <label for="settings-username" class="form-label">Никнейм</label>
-                            <input type="text" id="settings-username" class="form-input" value="username" required minlength="3" maxlength="30">
+                            <input type="text" id="settings-username" class="form-input" value="username" required minlength="3" maxlength="30" name="username">
                             <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
                         </div>
 
                         <!-- Смена пароля -->
                         <div class="form-group">
-                            <label class="form-label">Смена пароля</label>
+                            <label class="form-label optional">Смена пароля</label>
                             <div class="password-fields">
-                                <input type="password" class="form-input" placeholder="Текущий пароль" style="margin-bottom: 0.5rem;">
-                                <input type="password" class="form-input" placeholder="Новый пароль" style="margin-bottom: 0.5rem;">
-                                <input type="password" class="form-input" placeholder="Подтвердите новый пароль">
+                                <input type="password" class="form-input" placeholder="Текущий пароль" name="current_password">
+                                <input type="password" class="form-input" placeholder="Новый пароль" name="new_password">
+                                <input type="password" class="form-input" placeholder="Подтвердите новый пароль" name="new_password_confirm">
                             </div>
                             <div class="form-hint">Оставьте пустым, если не хотите менять пароль</div>
                         </div>

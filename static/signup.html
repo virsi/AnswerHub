@@ -29,7 +29,7 @@
                 <h1>Регистрация</h1>
                 <p class="auth-subtitle">Присоединяйтесь к сообществу AnswerHub</p>
 
-                <form class="auth-form">
+                <form class="auth-form" enctype="multipart/form-data" method="post">
                     <!-- Электронная почта -->
                     <div class="form-group">
                         <label for="signup-email" class="form-label">Электронная почта</label>
@@ -44,17 +44,30 @@
                         <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
                     </div>
 
+                    <!-- Аватар -->
+                    <div class="form-group">
+                        <label for="signup-avatar" class="form-label optional">Аватар</label>
+                        <div class="file-upload">
+                            <input type="file" id="signup-avatar" class="file-input" accept="image/*" name="avatar">
+                            <label for="signup-avatar" class="file-label">
+                                <span class="file-text">Выберите файл</span>
+                                <span class="btn btn-outline">Загрузить</span>
+                            </label>
+                        </div>
+                        <div class="form-hint">Рекомендуемый размер: 200x200 пикселей. Максимальный размер: 2MB</div>
+                    </div>
+
                     <!-- Пароль -->
                     <div class="form-group">
                         <label for="signup-password" class="form-label">Пароль</label>
-                        <input type="password" id="signup-password" class="form-input" placeholder="Не менее 8 символов" required minlength="8">
+                        <input type="password" id="signup-password" class="form-input" placeholder="Не менее 8 символов" required minlength="8" name="password">
                         <div class="form-error">Пароль должен содержать не менее 8 символов</div>
                     </div>
 
                     <!-- Подтверждение пароля -->
                     <div class="form-group">
                         <label for="signup-password-confirm" class="form-label">Подтверждение пароля</label>
-                        <input type="password" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль" required>
+                        <input type="password" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль" required name="password_confirm">
                         <div class="form-error">Пароли не совпадают</div>
                     </div>
 
