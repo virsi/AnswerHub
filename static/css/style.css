@@ -1309,6 +1309,83 @@ code {
     font-weight: normal;
 }
 
+/* User menu with avatar */
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--border);
+}
+
+.user-avatar-small .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-greeting {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Mobile responsive for user menu with avatar */
+@media (max-width: 768px) {
+    .user-info {
+        display: none; /* Скрываем на мобильных для экономии места */
+    }
+
+    .user-menu .btn-outline:not(.btn-primary) {
+        display: none;
+    }
+
+    .user-menu .btn-primary {
+        display: block;
+    }
+}
+
+/* Для десктопной версии показываем полную информацию */
+@media (min-width: 769px) {
+    .user-menu {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+}
+
+/* Author info in questions and answers */
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.meta .author-info {
+    margin-left: 1rem;
+}
+
+/* Увеличим аватар в вопросах и ответах */
+.question-card .user-avatar-small,
+.answer-card .user-avatar-small {
+    width: 24px;
+    height: 24px;
+    border-width: 1px;
+}
+
+/* Для лучших пользователей в сайдбаре */
+.users-list .user-item .user-avatar-small {
+    width: 20px;
+    height: 20px;
+    margin-right: 0.5rem;
+}
+
 /* Footer */
 .footer {
     background: var(--bg-secondary);

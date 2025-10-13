@@ -55,7 +55,12 @@
 
                         <div class="meta">
                             <span>спросил 2 часа назад</span>
-                            <span>user123</span>
+                            <div class="author-info">
+                                <div class="user-avatar-small">
+                                    <img src="./img/avatar-placeholder.jpg" alt="Аватар user123" class="avatar-img">
+                                </div>
+                                <span>user123</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -65,6 +70,7 @@
                     <h2>3 ответа</h2>
                 </div>
 
+                <!-- Первый ответ -->
                 <div class="answer-card">
                     <div class="vote-buttons">
                         <button class="vote-btn vote-up">↑</button>
@@ -90,12 +96,18 @@ CMD ["python", "manage.py", "runserver"]</code></pre>
                             </div>
                             <div class="meta">
                                 <span>ответил 1 час назад</span>
-                                <span>dev_expert</span>
+                                <div class="author-info">
+                                    <div class="user-avatar-small">
+                                        <img src="./img/avatar-placeholder.jpg" alt="Аватар dev_expert" class="avatar-img">
+                                    </div>
+                                    <span>dev_expert</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Второй ответ -->
                 <div class="answer-card">
                     <div class="vote-buttons">
                         <button class="vote-btn vote-up">↑</button>
@@ -111,7 +123,12 @@ CMD ["python", "manage.py", "runserver"]</code></pre>
                         <div class="answer-meta">
                             <div class="meta">
                                 <span>ответил 45 минут назад</span>
-                                <span>docker_guru</span>
+                                <div class="author-info">
+                                    <div class="user-avatar-small">
+                                        <img src="./img/avatar-placeholder.jpg" alt="Аватар docker_guru" class="avatar-img">
+                                    </div>
+                                    <span>docker_guru</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -120,7 +137,7 @@ CMD ["python", "manage.py", "runserver"]</code></pre>
                 <!-- Форма ответа -->
                 <div class="answer-form-card">
                     <h3>Ваш ответ</h3>
-                    <form class="answer-form">
+                    <form class="answer-form" method="post">
                         <div class="form-group">
                             <textarea class="form-textarea" rows="8" placeholder="Введите ваш ответ..." required></textarea>
                         </div>
@@ -145,15 +162,30 @@ CMD ["python", "manage.py", "runserver"]</code></pre>
                     <h3>Лучшие пользователи</h3>
                     <div class="users-list">
                         <div class="user-item">
-                            <span class="user-name">dev_expert</span>
+                            <div class="author-info">
+                                <div class="user-avatar-small">
+                                    <img src="./img/avatar-placeholder.jpg" alt="Аватар dev_expert" class="avatar-img">
+                                </div>
+                                <span class="user-name">dev_expert</span>
+                            </div>
                             <span class="user-rep">1,245</span>
                         </div>
                         <div class="user-item">
-                            <span class="user-name">python_master</span>
+                            <div class="author-info">
+                                <div class="user-avatar-small">
+                                    <img src="./img/avatar-placeholder.jpg" alt="Аватар python_master" class="avatar-img">
+                                </div>
+                                <span class="user-name">python_master</span>
+                            </div>
                             <span class="user-rep">987</span>
                         </div>
                         <div class="user-item">
-                            <span class="user-name">frontend_guru</span>
+                            <div class="author-info">
+                                <div class="user-avatar-small">
+                                    <img src="./img/avatar-placeholder.jpg" alt="Аватар frontend_guru" class="avatar-img">
+                                </div>
+                                <span class="user-name">frontend_guru</span>
+                            </div>
                             <span class="user-rep">856</span>
                         </div>
                     </div>
@@ -173,13 +205,13 @@ CMD ["python", "manage.py", "runserver"]</code></pre>
                     </p>
                     <div class="footer-social">
                         <a href="#" class="social-link" aria-label="GitHub">
-                            <span class="social-icon">🐙</span>
+                            <span class="social-icon">💻</span>
                         </a>
                         <a href="#" class="social-link" aria-label="Twitter">
                             <span class="social-icon">🐦</span>
                         </a>
                         <a href="#" class="social-link" aria-label="Telegram">
-                            <span class="social-icon">✈️</span>
+                            <span class="social-icon">📱</span>
                         </a>
                     </div>
                 </div>
