@@ -33,41 +33,28 @@
                     <!-- Электронная почта -->
                     <div class="form-group">
                         <label for="signup-email" class="form-label">Электронная почта</label>
-                        <input type="email" id="signup-email" class="form-input" placeholder="example@mail.com">
+                        <input type="email" id="signup-email" class="form-input" placeholder="example@mail.com" required>
                         <div class="form-error">Введите корректный email адрес</div>
                     </div>
 
                     <!-- Никнейм -->
                     <div class="form-group">
                         <label for="signup-username" class="form-label">Никнейм</label>
-                        <input type="text" id="signup-username" class="form-input" placeholder="Придумайте уникальный никнейм">
+                        <input type="text" id="signup-username" class="form-input" placeholder="Придумайте уникальный никнейм" required minlength="3" maxlength="30">
                         <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
-                    </div>
-
-                    <!-- Аватар -->
-                    <div class="form-group">
-                        <label for="signup-avatar" class="form-label">Аватар (необязательно)</label>
-                        <div class="file-upload">
-                            <input type="file" id="signup-avatar" class="file-input" accept="image/*">
-                            <label for="signup-avatar" class="file-label">
-                                <span class="file-text">Выберите файл</span>
-                                <span class="btn btn-outline">Загрузить</span>
-                            </label>
-                        </div>
-                        <div class="form-hint">Рекомендуемый размер: 200x200 пикселей</div>
                     </div>
 
                     <!-- Пароль -->
                     <div class="form-group">
                         <label for="signup-password" class="form-label">Пароль</label>
-                        <input type="password" id="signup-password" class="form-input" placeholder="Не менее 8 символов">
+                        <input type="password" id="signup-password" class="form-input" placeholder="Не менее 8 символов" required minlength="8">
                         <div class="form-error">Пароль должен содержать не менее 8 символов</div>
                     </div>
 
                     <!-- Подтверждение пароля -->
                     <div class="form-group">
                         <label for="signup-password-confirm" class="form-label">Подтверждение пароля</label>
-                        <input type="password" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль">
+                        <input type="password" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль" required>
                         <div class="form-error">Пароли не совпадают</div>
                     </div>
 
