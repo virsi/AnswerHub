@@ -36,7 +36,7 @@
                         <div class="form-group">
                             <label for="title" class="form-label">Заголовок</label>
                             <div class="form-hint">Будьте конкретны и представьте, что вы задаете вопрос другому человеку</div>
-                            <input type="text" id="title" class="form-input" placeholder="Например: Как настроить Docker для Django проекта?">
+                            <input type="text" id="title" class="form-input" placeholder="Например: Как настроить Docker для Django проекта?" required minlength="10" maxlength="200">
                             <div class="form-error">Заголовок должен содержать от 10 до 200 символов</div>
                         </div>
 
@@ -44,7 +44,7 @@
                         <div class="form-group">
                             <label for="question-body" class="form-label">Текст вопроса</label>
                             <div class="form-hint">Введите всю информацию, необходимую для ответа на ваш вопрос</div>
-                            <textarea id="question-body" class="form-textarea" rows="12" placeholder="Опишите вашу проблему подробно..."></textarea>
+                            <textarea id="question-body" class="form-textarea" rows="12" placeholder="Опишите вашу проблему подробно..." required></textarea>
                             <div class="form-error">Текст вопроса не может быть пустым</div>
                         </div>
 
@@ -52,7 +52,7 @@
                         <div class="form-group">
                             <label for="tags" class="form-label">Теги</label>
                             <div class="form-hint">Добавьте до 3 тегов через запятую, описывающих тему вашего вопроса</div>
-                            <input type="text" id="tags" class="form-input" placeholder="docker, django, python">
+                            <input type="text" id="tags" class="form-input" placeholder="docker, django, python" required>
                             <div class="form-error">Можно добавить не более 3 тегов</div>
                             <div class="tags-preview">
                                 <span class="tag">docker</span>
