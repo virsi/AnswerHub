@@ -908,6 +908,44 @@ code {
     line-height: 1.6;
 }
 
+/* Tag header with ask button */
+.tag-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.tag-header-top .tag-badge.large {
+    margin-bottom: 0;
+}
+
+/* Mobile responsive for tag header */
+@media (max-width: 768px) {
+    .tag-header-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .tag-header-top .tag-badge.large {
+        align-self: center;
+    }
+
+    .tag-header-top .btn {
+        align-self: center;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tag-header-top .btn {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
 /* Sorting options - improved */
 .sorting-options {
     display: flex;
