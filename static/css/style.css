@@ -1296,6 +1296,19 @@ code {
     gap: 0.5rem;
 }
 
+/* Required field indicator */
+.form-label::after {
+    content: " *";
+    color: var(--danger);
+}
+
+/* Optional field indicator (для необязательных полей) */
+.form-label.optional::after {
+    content: " (опционально)";
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
 /* Footer */
 .footer {
     background: var(--bg-secondary);

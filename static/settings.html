@@ -54,14 +54,14 @@
                         <!-- Электронная почта -->
                         <div class="form-group">
                             <label for="settings-email" class="form-label">Электронная почта</label>
-                            <input type="email" id="settings-email" class="form-input" value="user@example.com">
+                            <input type="email" id="settings-email" class="form-input" value="user@example.com" required>
                             <div class="form-error">Введите корректный email адрес</div>
                         </div>
 
                         <!-- Никнейм -->
                         <div class="form-group">
                             <label for="settings-username" class="form-label">Никнейм</label>
-                            <input type="text" id="settings-username" class="form-input" value="username">
+                            <input type="text" id="settings-username" class="form-input" value="username" required minlength="3" maxlength="30">
                             <div class="form-error">Никнейм должен содержать от 3 до 30 символов</div>
                         </div>
 
