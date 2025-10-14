@@ -1337,3 +1337,93 @@ code {
     padding: 0 10px;
   }
 }
+
+/* Search form with button */
+.search-form {
+    flex: 1;
+    max-width: 600px;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    min-width: 0; /* Для правильного flex поведения */
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(24, 100, 189, 0.1);
+}
+
+.search-submit {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(24, 100, 189, 0.3);
+    flex-shrink: 0; /* Чтобы кнопка не сжималась */
+}
+
+.search-submit:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(24, 100, 189, 0.4);
+}
+
+.search-submit:active {
+    transform: scale(0.95);
+}
+
+.search-submit svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Mobile responsive for search */
+@media (max-width: 768px) {
+    .search-form {
+        max-width: 100%;
+        gap: 0.25rem;
+    }
+
+    .search-input {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .search-submit {
+        width: 36px;
+        height: 36px;
+    }
+
+    .search-submit svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-submit {
+        width: 32px;
+        height: 32px;
+    }
+
+    .search-submit svg {
+        width: 14px;
+        height: 14px;
+    }
+}
