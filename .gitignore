@@ -117,3 +117,6 @@ GitHub.sublime-settings
 # Базы данных
 *.sqlite3
 *.db
+
+#MacOS
+.DS_Store
