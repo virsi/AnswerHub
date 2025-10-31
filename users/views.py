@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import LoginForm, SignUpForm, ProfileEditForm
 from .models import User
+from django.db.models import Sum
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -47,33 +48,49 @@ def signup(request):
 @login_required
 def profile_edit(request):
     if request.method == 'POST':
-        form = ProfileEditForm(
-            request.POST,
-            request.FILES,
-            instance=request.user
-        )
-        if form.is_valid():
-            user = form.save(commit=False)
+        # Получаем данные из формы
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        about = request.POST.get('about', '')
+        location = request.POST.get('location', '')
+        website = request.POST.get('website', '')
+        avatar = request.FILES.get('avatar')
 
-            # Обработка смены пароля
-            new_password = form.cleaned_data.get('new_password')
-            current_password = form.cleaned_data.get('current_password')
+        # Обновляем данные пользователя
+        user = request.user
+        user.username = username
+        user.email = email
+        user.about = about
+        user.location = location
+        user.website = website
 
-            if new_password and current_password:
-                if request.user.check_password(current_password):
+        if avatar:
+            user.avatar = avatar
+
+        # Обработка смены пароля
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        new_password_confirm = request.POST.get('new_password_confirm')
+
+        if new_password and new_password_confirm:
+            if current_password and user.check_password(current_password):
+                if new_password == new_password_confirm:
                     user.set_password(new_password)
+                    messages.success(request, 'Пароль успешно изменен!')
                 else:
-                    messages.error(request, 'Текущий пароль неверен')
-                    return render(request, 'users/settings.html', {'form': form})
+                    messages.error(request, 'Новые пароли не совпадают')
+            else:
+                messages.error(request, 'Текущий пароль неверен')
 
+        try:
             user.save()
             messages.success(request, 'Профиль успешно обновлен!')
-            return redirect('users:profile_edit')
-    else:
-        form = ProfileEditForm(instance=request.user)
+        except Exception as e:
+            messages.error(request, f'Ошибка при обновлении профиля: {str(e)}')
 
-    return render(request, 'users/settings.html', {'form': form})
+        return redirect('users:profile_edit')
 
+    return render(request, 'users/settings.html')
 def logout_view(request):
     if request.user.is_authenticated:
         logout(request)

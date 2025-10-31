@@ -8,14 +8,122 @@
     <div class="content">
         <div class="settings-container">
             <h1>Настройки профиля</h1>
-            <p>Здесь можно будет редактировать профиль.</p>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form class="settings-form" enctype="multipart/form-data" method="post">
+                {% csrf_token %}
+
+                <!-- Аватар -->
+                <div class="form-group">
+                    <label class="form-label optional">Аватар</label>
+                    <div class="avatar-section">
+                        <div class="avatar-preview">
+                            <div class="avatar-image">
+                                <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                     alt="Текущий аватар" class="avatar-img">
+                            </div>
+                            <div class="avatar-actions">
+                                <div class="file-upload">
+                                    <input type="file" id="avatar-upload" class="file-input" accept="image/*" name="avatar">
+                                    <label for="avatar-upload" class="btn btn-outline">Изменить аватар</label>
+                                </div>
+                                <button type="button" class="btn btn-outline btn-danger">Удалить</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Электронная почта -->
+                <div class="form-group">
+                    <label for="settings-email" class="form-label">Электронная почта</label>
+                    <input type="email" id="settings-email" class="form-input" value="{{ user.email }}" required name="email">
+                </div>
+
+                <!-- Никнейм -->
+                <div class="form-group">
+                    <label for="settings-username" class="form-label">Никнейм</label>
+                    <input type="text" id="settings-username" class="form-input" value="{{ user.username }}" required minlength="3" maxlength="30" name="username">
+                </div>
+
+                <!-- О себе -->
+                <div class="form-group">
+                    <label for="settings-about" class="form-label optional">О себе</label>
+                    <textarea id="settings-about" class="form-textarea" rows="4" placeholder="Расскажите о себе..." name="about">{{ user.about|default:'' }}</textarea>
+                </div>
+
+                <!-- Местоположение -->
+                <div class="form-group">
+                    <label for="settings-location" class="form-label optional">Местоположение</label>
+                    <input type="text" id="settings-location" class="form-input" value="{{ user.location|default:'' }}" name="location" placeholder="Город, страна">
+                </div>
+
+                <!-- Веб-сайт -->
+                <div class="form-group">
+                    <label for="settings-website" class="form-label optional">Веб-сайт</label>
+                    <input type="url" id="settings-website" class="form-input" value="{{ user.website|default:'' }}" name="website" placeholder="https://example.com">
+                </div>
+
+                <!-- Смена пароля -->
+                <div class="form-group">
+                    <label class="form-label optional">Смена пароля</label>
+                    <div class="password-fields">
+                        <input type="password" class="form-input" placeholder="Текущий пароль" name="current_password">
+                        <input type="password" class="form-input" placeholder="Новый пароль" name="new_password">
+                        <input type="password" class="form-input" placeholder="Подтвердите новый пароль" name="new_password_confirm">
+                    </div>
+                    <div class="form-hint">Оставьте пустым, если не хотите менять пароль</div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">Сохранить изменения</button>
+                    <a href="{% url 'questions:list' %}" class="btn btn-outline">Отмена</a>
+                </div>
+            </form>
         </div>
     </div>
 
     <aside class="sidebar">
         <div class="sidebar-card">
-            <h3>Статистика</h3>
-            <p>Статистика появится позже.</p>
+            <h3>Статистика профиля</h3>
+            <div class="stats-list">
+                <div class="stat-item">
+                    <span class="stat-label">Заданные вопросы:</span>
+                    <span class="stat-value">{{ user.questions.count }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Данные ответы:</span>
+                    <span class="stat-value">{{ user.answers.count }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Полученные голоса:</span>
+                    <span class="stat-value">
+                        {% with total_votes=user.questions.all %}
+                            {{ total_votes.0.votes|default:0 }}
+                        {% endwith %}
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Репутация:</span>
+                    <span class="stat-value reputation">{{ user.reputation }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>Безопасность</h3>
+            <div class="security-tips">
+                <p>• Используйте сложный пароль</p>
+                <p>• Не передавайте данные для входа</p>
+                <p>• Регулярно обновляйте пароль</p>
+            </div>
         </div>
     </aside>
 </div>
