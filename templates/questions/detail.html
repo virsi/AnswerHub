@@ -28,7 +28,7 @@
 
                 <div class="tags">
                     {% for tag in question.tags.all %}
-                    <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
+                    <a href="#" class="tag">{{ tag.name }}</a>
                     {% endfor %}
                 </div>
 
@@ -48,10 +48,10 @@
 
         <!-- Ответы -->
         <div class="answers-header">
-            <h2>{{ page.paginator.count }} ответов</h2>
+            <h2>{{ question.answers.count }} ответов</h2>
         </div>
 
-        {% for answer in page.object_list %}
+        {% for answer in question.answers.all %}
         <div class="answer-card {% if answer.is_correct %}correct{% endif %}">
             <div class="vote-buttons">
                 <form method="post" action="{% url 'answers:vote' answer.id %}">
@@ -96,8 +96,6 @@
             </div>
         </div>
         {% endfor %}
-
-        {% include 'includes/pagination.html' with page=page %}
 
         <!-- Форма ответа -->
         {% if user.is_authenticated %}
