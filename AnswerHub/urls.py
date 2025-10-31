@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('questions.urls')),
+    path('question', include('questions.urls')),
     path('users/', include('users.urls')),
     path('answers/', include('answers.urls')),
     path('tags/', include('tags.urls')),  # Добавляем tags
