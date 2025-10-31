@@ -4,8 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from .models import Question, QuestionVote
 from .forms import QuestionForm
-# УБИРАЕМ этот импорт пока что
-# from answers.models import Answer
+from answers.models import Answer
 from tags.models import Tag
 
 def paginate(objects_list, request, per_page=10):
@@ -49,9 +48,6 @@ def question_detail(request, question_id):
     # Увеличиваем счетчик просмотров
     question.views += 1
     question.save(update_fields=['views'])
-
-    # Теперь импорт работает
-    from answers.models import Answer
     answers = Answer.objects.filter(question=question, is_active=True).select_related('author')
     page = paginate(answers, request, per_page=10)
 
@@ -71,7 +67,7 @@ def ask_question(request):
 
             # Обработка тегов (временно заглушка)
             tags = form.cleaned_data.get('tags', [])
-            # Здесь позже добавим логику для тегов
+            # Здесь позже добавлю логику для тегов
 
             messages.success(request, 'Ваш вопрос успешно опубликован!')
             return redirect('questions:detail', question_id=question.id)
@@ -88,7 +84,7 @@ def vote_question(request, question_id):
     if value in ['1', '-1']:
         value = int(value)
 
-        # Проверяем, не голосовал ли уже пользователь
+        # Проверка, не голосовал ли уже пользователь
         existing_vote = QuestionVote.objects.filter(
             user=request.user,
             question=question
