@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Задать вопрос - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="ask-form-container">
+            <h1>Задать вопрос</h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form class="ask-form" method="post">
+                {% csrf_token %}
+
+                <!-- Заголовок -->
+                <div class="form-group">
+                    <label for="title" class="form-label">Заголовок</label>
+                    <div class="form-hint">Будьте конкретны и представьте, что вы задаете вопрос другому человеку</div>
+                    <input type="text" name="title" id="title" class="form-input" placeholder="Например: Как настроить Docker для Django проекта?" required minlength="10" maxlength="200" value="{{ form.title.value|default:'' }}">
+                    {% if form.title.errors %}
+                        <div class="form-error show">
+                            {% for error in form.title.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Текст вопроса -->
+                <div class="form-group">
+                    <label for="question-body" class="form-label">Текст вопроса</label>
+                    <div class="form-hint">Введите всю информацию, необходимую для ответа на ваш вопрос</div>
+                    <textarea name="content" id="question-body" class="form-textarea" rows="12" placeholder="Опишите вашу проблему подробно..." required>{{ form.content.value|default:'' }}</textarea>
+                    {% if form.content.errors %}
+                        <div class="form-error show">
+                            {% for error in form.content.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Теги -->
+                <div class="form-group">
+                    <label for="tags" class="form-label">Теги</label>
+                    <div class="form-hint">Добавьте до 3 тегов через запятую, описывающих тему вашего вопроса</div>
+                    <input type="text" name="tags" id="tags" class="form-input" placeholder="docker, django, python" value="{{ form.tags.value|default:'' }}">
+                    {% if form.tags.errors %}
+                        <div class="form-error show">
+                            {% for error in form.tags.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="tags-preview">
+                        <span class="tag">docker</span>
+                        <span class="tag">django</span>
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">Опубликовать вопрос</button>
+                    <a href="{% url 'questions:list' %}" class="btn btn-outline">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-card">
+            <h3>Как правильно задать вопрос</h3>
+            <div class="tips-list">
+                <div class="tip-item">
+                    <strong>Опишите проблему подробно</strong>
+                    <p>Включите всю необходимую информацию для воспроизведения проблемы</p>
+                </div>
+                <div class="tip-item">
+                    <strong>Добавьте код</strong>
+                    <p>Если вопрос связан с кодом, включите соответствующие фрагменты</p>
+                </div>
+                <div class="tip-item">
+                    <strong>Выберите правильные теги</strong>
+                    <p>Это поможет вашему вопросу найти нужную аудиторию</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>Популярные теги</h3>
+            <div class="tags">
+                <a href="#" class="tag">javascript</a>
+                <a href="#" class="tag">python</a>
+                <a href="#" class="tag">docker</a>
+                <a href="#" class="tag">django</a>
+                <a href="#" class="tag">react</a>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

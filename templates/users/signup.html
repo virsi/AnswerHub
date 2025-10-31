@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Регистрация</h1>
+        <p class="auth-subtitle">Присоединяйтесь к сообществу AnswerHub</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form class="auth-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Электронная почта -->
+            <div class="form-group">
+                <label for="signup-email" class="form-label">Электронная почта</label>
+                <input type="email" name="email" id="signup-email" class="form-input" placeholder="example@mail.com" required>
+            </div>
+
+            <!-- Никнейм -->
+            <div class="form-group">
+                <label for="signup-username" class="form-label">Никнейм</label>
+                <input type="text" name="username" id="signup-username" class="form-input" placeholder="Придумайте уникальный никнейм" required minlength="3" maxlength="30">
+            </div>
+
+            <!-- Пароль -->
+            <div class="form-group">
+                <label for="signup-password" class="form-label">Пароль</label>
+                <input type="password" name="password1" id="signup-password" class="form-input" placeholder="Не менее 8 символов" required minlength="8">
+            </div>
+
+            <!-- Подтверждение пароля -->
+            <div class="form-group">
+                <label for="signup-password-confirm" class="form-label">Подтверждение пароля</label>
+                <input type="password" name="password2" id="signup-password-confirm" class="form-input" placeholder="Повторите ваш пароль" required>
+            </div>
+
+            <!-- Кнопка регистрации -->
+            <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Уже есть аккаунт? <a href="{% url 'users:login' %}" class="auth-link">Войдите</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

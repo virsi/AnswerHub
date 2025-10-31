@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}  <!-- ДОБАВЬТЕ ЭТУ СТРОКУ -->
+
+{% block title %}Главная - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="questions-header">
+            <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
+        </div>
+
+        <div class="sorting-options">
+            <span class="sort-label">Сортировка:</span>
+            <div class="sort-buttons">
+                <a href="{% url 'questions:list' %}" class="sort-btn {% if request.path == '/' %}active{% endif %}">
+                    <span class="sort-icon">🕒</span>
+                    По дате
+                </a>
+                <a href="{% url 'questions:hot' %}" class="sort-btn {% if request.path == '/hot/' %}active{% endif %}">
+                    <span class="sort-icon">🔥</span>
+                    По рейтингу
+                </a>
+            </div>
+        </div>
+
+        <div class="questions-list">
+            {% for question in page.object_list %}
+            <div class="question-card">
+                <div class="vote-buttons">
+                    <button class="vote-btn vote-up">↑</button>
+                    <span class="vote-count">{{ question.votes }}</span>
+                    <button class="vote-btn vote-down">↓</button>
+                </div>
+
+                <div class="question-content">
+                    <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
+                    <p>{{ question.content|truncatewords:30 }}</p>
+
+                    <div class="tags">
+                        {% for tag in question.tags.all %}
+                        <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
+                        {% empty %}
+                        <span class="tag">без тега</span>
+                        {% endfor %}
+                    </div>
+
+                    <div class="meta">
+                        <span>спросил {{ question.created_at|timesince }} назад</span>
+                        <span>{{ question.answers_count }} ответов</span>
+                        <div class="author-info">
+                            <div class="user-avatar-small">
+                                <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Аватар {{ question.author.username }}" class="avatar-img">
+                            </div>
+                            <span>{{ question.author.username }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-questions">
+                <h3>Пока нет вопросов</h3>
+                <p>Будьте первым, кто задаст вопрос!</p>
+                <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% include 'includes/pagination.html' with page=page %}
+    </div>
+
+    <aside class="sidebar">
+        {% include 'includes/sidebar_popular_tags.html' %}
+        {% include 'includes/sidebar_top_users.html' %}
+    </aside>
+</div>
+{% endblock %}

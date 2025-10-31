@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question.title }} - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <!-- Вопрос -->
+        <div class="question-card">
+            <div class="vote-buttons">
+                <form method="post" action="{% url 'questions:vote' question.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="value" value="1" class="vote-btn vote-up">↑</button>
+                </form>
+                <span class="vote-count">{{ question.votes }}</span>
+                <form method="post" action="{% url 'questions:vote' question.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="value" value="-1" class="vote-btn vote-down">↓</button>
+                </form>
+            </div>
+
+            <div class="question-content">
+                <h1>{{ question.title }}</h1>
+                <div class="question-body">
+                    {{ question.content|linebreaks }}
+                </div>
+
+                <div class="tags">
+                    {% for tag in question.tags.all %}
+                    <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+
+                <div class="meta">
+                    <span>спросил {{ question.created_at|timesince }} назад</span>
+                    <span>просмотров: {{ question.views }}</span>
+                    <div class="author-info">
+                        <div class="user-avatar-small">
+                            <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                 alt="Аватар {{ question.author.username }}" class="avatar-img">
+                        </div>
+                        <span>{{ question.author.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ответы -->
+        <div class="answers-header">
+            <h2>{{ page.paginator.count }} ответов</h2>
+        </div>
+
+        {% for answer in page.object_list %}
+        <div class="answer-card {% if answer.is_correct %}correct{% endif %}">
+            <div class="vote-buttons">
+                <form method="post" action="{% url 'answers:vote' answer.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="value" value="1" class="vote-btn vote-up">↑</button>
+                </form>
+                <span class="vote-count">{{ answer.votes }}</span>
+                <form method="post" action="{% url 'answers:vote' answer.id %}">
+                    {% csrf_token %}
+                    <button type="submit" name="value" value="-1" class="vote-btn vote-down">↓</button>
+                </form>
+            </div>
+
+            <div class="answer-content">
+                <div class="answer-body">
+                    {{ answer.content|linebreaks }}
+                </div>
+
+                <div class="answer-meta">
+                    {% if answer.is_correct %}
+                    <div class="correct-answer">
+                        <span class="correct-badge">✓ Правильный ответ</span>
+                    </div>
+                    {% elif question.author == user %}
+                    <form method="post" action="{% url 'answers:mark_correct' answer.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline">Отметить как правильный</button>
+                    </form>
+                    {% endif %}
+
+                    <div class="meta">
+                        <span>ответил {{ answer.created_at|timesince }} назад</span>
+                        <div class="author-info">
+                            <div class="user-avatar-small">
+                                <img src="{% if answer.author.avatar %}{{ answer.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                     alt="Аватар {{ answer.author.username }}" class="avatar-img">
+                            </div>
+                            <span>{{ answer.author.username }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% include 'includes/pagination.html' with page=page %}
+
+        <!-- Форма ответа -->
+        {% if user.is_authenticated %}
+        <div class="answer-form-card">
+            <h3>Ваш ответ</h3>
+            <form class="answer-form" method="post" action="{% url 'answers:create' question.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea name="content" class="form-textarea" rows="8" placeholder="Введите ваш ответ..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить ответ</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="auth-prompt">
+            <p>Чтобы ответить на вопрос, <a href="{% url 'users:login' %}">войдите</a> или <a href="{% url 'users:signup' %}">зарегистрируйтесь</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <aside class="sidebar">
+        {% include 'includes/sidebar_popular_tags.html' %}
+        {% include 'includes/sidebar_top_users.html' %}
+    </aside>
+</div>
+{% endblock %}

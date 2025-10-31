@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Вход - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Вход в AnswerHub</h1>
+        <p class="auth-subtitle">Войдите, чтобы задавать вопросы и отвечать другим</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form class="auth-form" method="post">
+            {% csrf_token %}
+
+            <!-- Логин -->
+            <div class="form-group">
+                <label for="login-username" class="form-label">Электронная почта или никнейм</label>
+                <input type="text" name="username" id="login-username" class="form-input" placeholder="Введите ваш email или никнейм" required>
+            </div>
+
+            <!-- Пароль -->
+            <div class="form-group">
+                <label for="login-password" class="form-label">Пароль</label>
+                <input type="password" name="password" id="login-password" class="form-input" placeholder="Введите ваш пароль" required>
+            </div>
+
+            <!-- Кнопка входа -->
+            <button type="submit" class="btn btn-primary btn-full">Войти</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Еще нет аккаунта? <a href="{% url 'users:signup' %}" class="auth-link">Зарегистрируйтесь</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% load static %}  <!-- ДОБАВЬТЕ ЭТУ СТРОКУ -->
+<div class="sidebar-card">
+    <h3>Лучшие пользователи</h3>
+    <div class="users-list">
+        <div class="user-item">
+            <div class="author-info">
+                <div class="user-avatar-small">
+                    <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Аватар dev_expert" class="avatar-img">
+                </div>
+                <span class="user-name">dev_expert</span>
+            </div>
+            <span class="user-rep">1,245</span>
+        </div>
+        <div class="user-item">
+            <div class="author-info">
+                <div class="user-avatar-small">
+                    <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Аватар python_master" class="avatar-img">
+                </div>
+                <span class="user-name">python_master</span>
+            </div>
+            <span class="user-rep">987</span>
+        </div>
+        <div class="user-item">
+            <div class="author-info">
+                <div class="user-avatar-small">
+                    <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Аватар frontend_guru" class="avatar-img">
+                </div>
+                <span class="user-name">frontend_guru</span>
+            </div>
+            <span class="user-rep">856</span>
+        </div>
+    </div>
+</div>
