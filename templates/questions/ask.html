@@ -24,7 +24,7 @@
                 <div class="form-group">
                     <label for="title" class="form-label">Заголовок</label>
                     <div class="form-hint">Будьте конкретны и представьте, что вы задаете вопрос другому человеку</div>
-                    <input type="text" name="title" id="title" class="form-input" placeholder="Например: Как настроить Docker для Django проекта?" required minlength="10" maxlength="200" value="{{ form.title.value|default:'' }}">
+                    {{ form.title }}
                     {% if form.title.errors %}
                         <div class="form-error show">
                             {% for error in form.title.errors %}
@@ -38,7 +38,7 @@
                 <div class="form-group">
                     <label for="question-body" class="form-label">Текст вопроса</label>
                     <div class="form-hint">Введите всю информацию, необходимую для ответа на ваш вопрос</div>
-                    <textarea name="content" id="question-body" class="form-textarea" rows="12" placeholder="Опишите вашу проблему подробно..." required>{{ form.content.value|default:'' }}</textarea>
+                    {{ form.content }}
                     {% if form.content.errors %}
                         <div class="form-error show">
                             {% for error in form.content.errors %}
@@ -52,17 +52,16 @@
                 <div class="form-group">
                     <label for="tags" class="form-label">Теги</label>
                     <div class="form-hint">Добавьте до 3 тегов через запятую, описывающих тему вашего вопроса</div>
-                    <input type="text" name="tags" id="tags" class="form-input" placeholder="docker, django, python" value="{{ form.tags.value|default:'' }}">
-                    {% if form.tags.errors %}
+                    {{ form.tags_input }}
+                    {% if form.tags_input.errors %}
                         <div class="form-error show">
-                            {% for error in form.tags.errors %}
+                            {% for error in form.tags_input.errors %}
                                 {{ error }}
                             {% endfor %}
                         </div>
                     {% endif %}
-                    <div class="tags-preview">
-                        <span class="tag">docker</span>
-                        <span class="tag">django</span>
+                    <div class="tags-preview" id="tags-preview">
+                        <!-- Здесь будут отображаться выбранные теги -->
                     </div>
                 </div>
 
@@ -76,6 +75,8 @@
     </div>
 
     <aside class="sidebar">
+        {% include 'includes/sidebar_popular_tags.html' %}
+
         <div class="sidebar-card">
             <h3>Как правильно задать вопрос</h3>
             <div class="tips-list">
@@ -93,17 +94,18 @@
                 </div>
             </div>
         </div>
-
-        <div class="sidebar-card">
-            <h3>Популярные теги</h3>
-            <div class="tags">
-                <a href="#" class="tag">javascript</a>
-                <a href="#" class="tag">python</a>
-                <a href="#" class="tag">docker</a>
-                <a href="#" class="tag">django</a>
-                <a href="#" class="tag">react</a>
-            </div>
-        </div>
     </aside>
 </div>
+
+<script>
+// Скрипт для предпросмотра тегов
+document.getElementById('id_tags_input').addEventListener('input', function(e) {
+    const tagsPreview = document.getElementById('tags-preview');
+    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+    tagsPreview.innerHTML = tags.map(tag =>
+        `<span class="tag">${tag}</span>`
+    ).join('');
+});
+</script>
 {% endblock %}

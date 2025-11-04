@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}AnswerHub{% endblock %}</title>
-    {% load static %}  <!-- ДОБАВЬТЕ ЭТУ СТРОКУ -->
+    {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
@@ -28,11 +28,11 @@
                         <div class="user-info">
                             <div class="user-avatar-small">
                                 <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
-                                    alt="Аватар {{ user.username }}" class="avatar-img">
+                                     alt="Аватар {{ user.username }}" class="avatar-img">
                             </div>
                             <span class="user-greeting">{{ user.username }}</span>
                         </div>
-                        <a href="{% url 'users:profile_edit' %}" class="btn btn-outline">Профиль</a>  <!-- ЭТА ССЫЛКА -->
+                        <a href="{% url 'users:profile_edit' %}" class="btn btn-outline">Профиль</a>
                         <a href="{% url 'users:logout' %}" class="btn btn-outline">Выйти</a>
                     {% else %}
                         <a href="{% url 'users:login' %}" class="btn btn-outline">Войти</a>

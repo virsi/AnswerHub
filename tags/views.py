@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from .models import Tag
-from questions.models import Question
+from questions.models import Question  # Импортируем из questions.models!
 
 def paginate(objects_list, request, per_page=10):
     paginator = Paginator(objects_list, per_page)
@@ -16,13 +16,17 @@ def paginate(objects_list, request, per_page=10):
 
     return page
 
+def tag_list(request):
+    tags = Tag.objects.all().order_by('-usage_count', 'name')
+    return render(request, 'tags/list.html', {'tags': tags})
+
 def tag_detail(request, tag_name):
     tag = get_object_or_404(Tag, name=tag_name)
 
     questions = Question.objects.filter(
         tags=tag,
         is_active=True
-    ).select_related('author')
+    ).select_related('author').order_by('-created_at')
 
     page = paginate(questions, request)
 
@@ -30,7 +34,3 @@ def tag_detail(request, tag_name):
         'tag': tag,
         'page': page
     })
-
-def tag_list(request):
-    tags = Tag.objects.all().order_by('-usage_count', 'name')
-    return render(request, 'tags/list.html', {'tags': tags})

@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'tags.context_processors.popular_tags',
             ],
         },
     },
@@ -122,7 +123,7 @@ LOGOUT_REDIRECT_URL = 'questions:list'
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / 'static', 
+    BASE_DIR / 'static',
 ]
 
 # Media files

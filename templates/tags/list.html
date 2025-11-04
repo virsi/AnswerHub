@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Все теги - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="tag-header">
+            <h1>Все теги</h1>
+            <p class="tag-description">Исследуйте теги, чтобы найти интересующие вас темы</p>
+        </div>
+
+        <div class="tags-grid">
+            {% for tag in tags %}
+            <div class="tag-card">
+                <div class="tag-header">
+                    <a href="{% url 'tags:detail' tag.name %}" class="tag-badge large">{{ tag.name }}</a>
+                </div>
+                <div class="tag-info">
+                    <p class="tag-description">
+                        {% if tag.description %}
+                            {{ tag.description }}
+                        {% else %}
+                            Вопросы с тегом "{{ tag.name }}"
+                        {% endif %}
+                    </p>
+                    <div class="tag-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Вопросов:</span>
+                            <span class="stat-value">{{ tag.questions.count }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Использований:</span>
+                            <span class="stat-value">{{ tag.usage_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-tags">
+                <h3>Тегов пока нет</h3>
+                <p>Теги появятся, когда пользователи начнут задавать вопросы.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.tag-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+
+.tag-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.tag-header {
+    text-align: center;
+    margin-bottom: 1rem;
+
+}
+
+.tag-info {
+    text-align: center;
+}
+
+.tag-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.tag-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.no-tags {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+</style>
+{% endblock %}

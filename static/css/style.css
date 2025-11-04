@@ -1463,3 +1463,83 @@ code {
     border-color: var(--warning);
     color: #856404;
 }
+
+/* Tag pages styles */
+.tag-header-top {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1.2rem;
+}
+
+.tag-header {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    text-align: center;
+    box-shadow: var(--shadow);
+}
+
+.tag-badge.large {
+    display: inline-block;
+    background: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(24, 100, 189, 0.3);
+}
+
+.tag-header h1 {
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.tag-description {
+    color: var(--text-secondary);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Tags grid for tag list */
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.tag-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+}
+
+.tag-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.tag-info {
+    text-align: center;
+}
+
+.tag-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+}
+
+.no-tags {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
