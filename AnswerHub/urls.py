@@ -8,5 +8,6 @@ urlpatterns = [
     path('question', include('questions.urls')),
     path('users/', include('users.urls')),
     path('answers/', include('answers.urls')),
-    path('tags/', include('tags.urls')),  # Добавляем tags
+    path('tags/', include('tags.urls')),
+    path('', include('questions.urls')), #редирект
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
