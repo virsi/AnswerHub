@@ -72,21 +72,18 @@ def question_detail(request, question_id):
 @login_required
 def ask_question(request):
     if request.method == 'POST':
-        title = request.POST.get('title')
-        content = request.POST.get('content')
-        tags_input = request.POST.get('tags', '')
-
-        print(f"Данные формы: title={title}, tags={tags_input}")  # ДЛЯ ОТЛАДКИ
-
-        if title and content:
+        form = QuestionForm(request.POST)
+        if form.is_valid():
             # Создаем вопрос
             question = Question.objects.create(
-                title=title,
-                content=content,
+                title=form.cleaned_data['title'],
+                content=form.cleaned_data['content'],
                 author=request.user
             )
 
             # Обрабатываем теги
+            tags_input = form.cleaned_data.get('tags_input', '')
+            tags_input = ','.join(tags_input)
             if tags_input:
                 tag_names = [name.strip().lower() for name in tags_input.split(',') if name.strip()]
                 print(f"Теги для сохранения: {tag_names}")  # ДЛЯ ОТЛАДКИ
@@ -96,7 +93,7 @@ def ask_question(request):
                         name=tag_name,
                         defaults={'description': f'Вопросы о {tag_name}'}
                     )
-                    question.tags.add(tag)  # Важно: используем add() для m2m
+                    question.tags.add(tag)
                     if created:
                         tag.usage_count = 1
                     else:
@@ -110,10 +107,10 @@ def ask_question(request):
 
             messages.success(request, 'Ваш вопрос успешно опубликован!')
             return redirect('questions:detail', question_id=question.id)
-        else:
-            messages.error(request, 'Пожалуйста, заполните все обязательные поля')
+    else:
+        form = QuestionForm()
 
-    return render(request, 'questions/ask.html')
+    return render(request, 'questions/ask.html', {'form': form})
 
 @login_required
 def vote_question(request, question_id):
