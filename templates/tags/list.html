@@ -44,6 +44,11 @@
             </div>
             {% endfor %}
         </div>
+
+        <!-- Пагинация для списка тегов -->
+        {% if page %}
+            {% include 'includes/pagination.html' with page=page %}
+        {% endif %}
     </div>
 </div>
 
@@ -72,7 +77,6 @@
 .tag-header {
     text-align: center;
     margin-bottom: 1rem;
-
 }
 
 .tag-info {
@@ -92,10 +96,28 @@
     margin-top: 1rem;
 }
 
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 .no-tags {
     text-align: center;
     padding: 3rem;
     color: var(--text-secondary);
+    grid-column: 1 / -1;
 }
 </style>
 {% endblock %}
