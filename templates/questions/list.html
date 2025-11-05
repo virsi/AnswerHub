@@ -13,11 +13,11 @@
         <div class="sorting-options">
             <span class="sort-label">Сортировка:</span>
             <div class="sort-buttons">
-                <a href="{% url 'questions:list' %}" class="sort-btn {% if request.path == '/' %}active{% endif %}">
+                <a href="{% url 'questions:list' %}" class="sort-btn {% if request.resolver_match.url_name == 'list' %}active{% endif %}">
                     <span class="sort-icon">🕒</span>
                     По дате
                 </a>
-                <a href="{% url 'questions:hot' %}" class="sort-btn {% if request.path == '/hot/' %}active{% endif %}">
+                <a href="{% url 'questions:hot' %}" class="sort-btn {% if request.resolver_match.url_name == 'hot' %}active{% endif %}">
                     <span class="sort-icon">🔥</span>
                     По рейтингу
                 </a>
@@ -25,23 +25,33 @@
         </div>
 
         <div class="questions-list">
-            {% for question in page.object_list %}
+            {% for question in page %}
             <div class="question-card">
                 <div class="vote-buttons">
+                    {% if user.is_authenticated %}
                     <form method="post" action="{% url 'questions:vote' question.id %}">
                         {% csrf_token %}
                         <button type="submit" name="value" value="1" class="vote-btn vote-up">↑</button>
                     </form>
+                    {% else %}
+                    <button type="button" class="vote-btn vote-up disabled">↑</button>
+                    {% endif %}
+
                     <span class="vote-count">{{ question.votes }}</span>
+
+                    {% if user.is_authenticated %}
                     <form method="post" action="{% url 'questions:vote' question.id %}">
                         {% csrf_token %}
                         <button type="submit" name="value" value="-1" class="vote-btn vote-down">↓</button>
                     </form>
+                    {% else %}
+                    <button type="button" class="vote-btn vote-down disabled">↓</button>
+                    {% endif %}
                 </div>
 
                 <div class="question-content">
                     <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
-                    <p>{{ question.content|truncatewords:30 }}</p>
+                    <p>{{ question.content|striptags|truncatewords:30 }}</p>
 
                     <div class="tags">
                         {% for tag in question.tags.all %}
@@ -53,7 +63,8 @@
 
                     <div class="meta">
                         <span>спросил {{ question.created_at|timesince }} назад</span>
-                        <span>{{ question.answers.count }} ответов</span>
+                        <span>{{ question.answer_set.count }} ответов</span>
+                        <span>{{ question.views }} просмотров</span>
                         <div class="author-info">
                             <div class="user-avatar-small">
                                 <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"

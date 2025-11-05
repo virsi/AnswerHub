@@ -915,6 +915,18 @@ code {
     gap: 1rem;
 }
 
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
 .page-numbers {
     display: flex;
     gap: 0.5rem;
@@ -935,6 +947,7 @@ code {
     min-width: 44px;
     justify-content: center;
     box-shadow: var(--shadow);
+    background: var(--bg-primary);
 }
 
 .page-link:not(.disabled):hover {
@@ -963,10 +976,61 @@ code {
     line-height: 1;
 }
 
+.page-text {
+    font-size: 0.9rem;
+}
+
 .page-ellipsis {
     padding: 0 0.5rem;
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .pagination {
+        flex-direction: column;
+        gap: 1.5rem;
+        text-align: center;
+    }
+
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .page-numbers {
+        order: -1;
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+
+    .page-text {
+        display: none;
+    }
+
+    .page-link {
+        padding: 0.6rem 0.8rem;
+        min-width: 40px;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .page-numbers {
+        gap: 0.25rem;
+    }
+
+    .page-link {
+        padding: 0.5rem 0.6rem;
+        min-width: 36px;
+        font-size: 0.85rem;
+    }
+
+    .pagination-info {
+        font-size: 0.85rem;
+    }
 }
 
 /* Footer */
