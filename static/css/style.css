@@ -1611,3 +1611,88 @@ code {
     padding: 3rem;
     color: var(--text-secondary);
 }
+
+/* Tags grid with 3 columns */
+.tags-grid.three-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.tag-card {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tag-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.tag-info {
+    text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.tag-description {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+/* Full width layout for tag pages */
+.main-layout.full-width {
+    grid-template-columns: 1fr;
+    max-width: none;
+}
+
+.content.full-width {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
+}
+
+/* Responsive design for tags grid */
+@media (max-width: 1024px) {
+    .tags-grid.three-columns {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .tags-grid.three-columns {
+        grid-template-columns: 1fr;
+    }
+
+    .content.full-width {
+        padding: 0 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content.full-width {
+        padding: 0 10px;
+    }
+
+    .tag-card {
+        padding: 1rem;
+    }
+
+    .tag-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}

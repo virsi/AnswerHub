@@ -4,14 +4,14 @@
 {% block title %}Все теги - AnswerHub{% endblock %}
 
 {% block content %}
-<div class="main-layout">
-    <div class="content">
+<div class="main-layout full-width">
+    <div class="content full-width">
         <div class="tag-header">
             <h1>Все теги</h1>
             <p class="tag-description">Исследуйте теги, чтобы найти интересующие вас темы</p>
         </div>
 
-        <div class="tags-grid">
+        <div class="tags-grid three-columns">
             {% for tag in tags %}
             <div class="tag-card">
                 <div class="tag-header">
@@ -53,9 +53,9 @@
 </div>
 
 <style>
-.tags-grid {
+.tags-grid.three-columns {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-top: 2rem;
 }
@@ -67,6 +67,9 @@
     padding: 1.5rem;
     box-shadow: var(--shadow);
     transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .tag-card:hover {
@@ -81,19 +84,24 @@
 
 .tag-info {
     text-align: center;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .tag-description {
     color: var(--text-secondary);
     margin-bottom: 1rem;
     line-height: 1.5;
+    flex-grow: 1;
 }
 
 .tag-stats {
     display: flex;
     justify-content: center;
     gap: 2rem;
-    margin-top: 1rem;
+    margin-top: auto;
 }
 
 .stat-item {
@@ -118,6 +126,21 @@
     padding: 3rem;
     color: var(--text-secondary);
     grid-column: 1 / -1;
+}
+
+/* Полная ширина для страницы тегов */
+.main-layout.full-width {
+    grid-template-columns: 1fr;
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.content.full-width {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    width: 100%;
 }
 </style>
 {% endblock %}

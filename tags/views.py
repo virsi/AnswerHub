@@ -20,7 +20,7 @@ def tag_list(request):
     tags_list = Tag.objects.all().order_by('-usage_count', 'name')
 
     # Добавляем пагинацию для списка тегов
-    page = paginate(tags_list, request, per_page=10)  # 20 тегов на страницу
+    page = paginate(tags_list, request, per_page=12)  # 20 тегов на страницу
 
     return render(request, 'tags/list.html', {
         'tags': page.object_list,  # для обратной совместимости
