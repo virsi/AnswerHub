@@ -1,0 +1,125 @@
+<!-- templates/answers/confirm_delete.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Удалить ответ - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="delete-confirmation">
+            <h1>Удаление ответа</h1>
+
+            <div class="warning-message">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                    <h3>Вы уверены, что хотите удалить этот ответ?</h3>
+                    <p>Это действие нельзя отменить.</p>
+                </div>
+            </div>
+
+            <div class="answer-preview">
+                <h2>Ответ на вопрос: {{ answer.question.title }}</h2>
+                <div class="answer-content-preview">
+                    {{ answer.content|striptags|truncatewords:50 }}
+                </div>
+                <div class="meta">
+                    <span>Создан: {{ answer.created_at|date:"d.m.Y H:i" }}</span>
+                    <span>Голосов: {{ answer.votes }}</span>
+                </div>
+            </div>
+
+            <div class="confirmation-actions">
+                <form method="post" class="delete-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-large">
+                        🗑️ Удалить ответ
+                    </button>
+                </form>
+                <a href="{% url 'questions:detail' answer.question.id %}" class="btn btn-outline">
+                    Отмена
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.delete-confirmation {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.warning-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.warning-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.warning-content h3 {
+    color: #856404;
+    margin-bottom: 0.5rem;
+}
+
+.warning-content p {
+    color: #856404;
+    margin: 0;
+}
+
+.answer-preview {
+    background: var(--bg-main);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+}
+
+.answer-preview h2 {
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.answer-content-preview {
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.confirmation-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.delete-form {
+    margin: 0;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+    box-shadow: 0 2px 4px rgba(250, 82, 82, 0.3);
+}
+
+.btn-danger:hover {
+    background: #e03131;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(250, 82, 82, 0.4);
+}
+</style>
+{% endblock %}

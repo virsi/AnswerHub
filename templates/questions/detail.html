@@ -84,6 +84,16 @@
                     </form>
                     {% endif %}
 
+                    <!-- Кнопка удаления ответа для автора -->
+                    {% if user == answer.author %}
+                    <div class="answer-actions">
+                        <button class="btn-text btn-text-danger delete-answer-btn"
+                                data-answer-id="{{ answer.id }}">
+                            Удалить
+                        </button>
+                    </div>
+                    {% endif %}
+
                     <div class="meta">
                         <span>ответил {{ answer.created_at|timesince }} назад</span>
                         <div class="author-info">
@@ -107,7 +117,7 @@
         <!-- Кнопка удаления для автора (после ответов) -->
         {% if user == question.author %}
         <div class="delete-action">
-            <button class="btn btn-danger" id="deleteQuestionBtn">🗑️ Удалить вопрос</button>
+            <button class="btn-text btn-text-danger" id="deleteQuestionBtn">Удалить вопрос</button>
         </div>
         {% endif %}
 
@@ -130,7 +140,7 @@
         {% endif %}
     </div>
 
-    <!-- Модальное окно подтверждения удаления -->
+    <!-- Модальное окно подтверждения удаления вопроса -->
     {% if user == question.author %}
     <div id="deleteModal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -153,6 +163,29 @@
     </div>
     {% endif %}
 
+    <!-- Модальное окно подтверждения удаления ответа -->
+    {% if user.is_authenticated %}
+    <div id="deleteAnswerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Удаление ответа</h3>
+                <button class="modal-close-answer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот ответ?</p>
+                <p>Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-actions">
+                <form id="deleteAnswerForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить ответ</button>
+                </form>
+                <button class="btn btn-outline modal-cancel-answer">Отмена</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <aside class="sidebar">
         {% include 'includes/sidebar_popular_tags.html' %}
         {% include 'includes/sidebar_top_users.html' %}
@@ -160,10 +193,44 @@
 </div>
 
 <style>
-/* Стили для кнопки удаления */
+/* Стили для кнопки удаления вопроса */
 .delete-action {
     margin: 2rem 0;
     text-align: right;
+}
+
+/* Стили для текстовых кнопок */
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.2s;
+}
+
+.btn-text-danger {
+    color: var(--danger);
+    text-decoration: underline;
+}
+
+.btn-text-danger:hover {
+    color: #e03131;
+    background: rgba(250, 82, 82, 0.1);
+    border-radius: 3px;
+}
+
+/* Стили для кнопок действий ответа */
+.answer-actions {
+    margin: 0.25rem 0;
+}
+
+.answer-meta {
+    display: flex;
+    flex-direction:row-reverse;
+    gap: 0.5rem;
 }
 
 .btn-danger {
@@ -215,7 +282,8 @@
     color: var(--text-primary);
 }
 
-.modal-close {
+.modal-close,
+.modal-close-answer {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -238,27 +306,68 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const deleteBtn = document.getElementById('deleteQuestionBtn');
-    if (deleteBtn) {
-        const modal = document.getElementById('deleteModal');
-        const closeBtn = document.querySelector('.modal-close');
-        const cancelBtn = document.querySelector('.modal-cancel');
+    // Удаление вопроса
+    const deleteQuestionBtn = document.getElementById('deleteQuestionBtn');
+    if (deleteQuestionBtn) {
+        const questionModal = document.getElementById('deleteModal');
+        const closeQuestionBtn = document.querySelector('.modal-close');
+        const cancelQuestionBtn = document.querySelector('.modal-cancel');
 
-        deleteBtn.addEventListener('click', function(e) {
+        deleteQuestionBtn.addEventListener('click', function(e) {
             e.preventDefault();
-            modal.style.display = 'block';
+            questionModal.style.display = 'block';
         });
 
-        function closeModal() {
-            modal.style.display = 'none';
+        function closeQuestionModal() {
+            questionModal.style.display = 'none';
         }
 
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
+        if (closeQuestionBtn) {
+            closeQuestionBtn.addEventListener('click', closeQuestionModal);
+        }
+        if (cancelQuestionBtn) {
+            cancelQuestionBtn.addEventListener('click', closeQuestionModal);
+        }
 
         window.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeModal();
+            if (e.target === questionModal) {
+                closeQuestionModal();
+            }
+        });
+    }
+
+    // Удаление ответов
+    const deleteAnswerBtns = document.querySelectorAll('.delete-answer-btn');
+    const answerModal = document.getElementById('deleteAnswerModal');
+    const deleteAnswerForm = document.getElementById('deleteAnswerForm');
+    const closeAnswerBtn = document.querySelector('.modal-close-answer');
+    const cancelAnswerBtn = document.querySelector('.modal-cancel-answer');
+
+    if (deleteAnswerBtns.length > 0 && answerModal) {
+        deleteAnswerBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const answerId = this.getAttribute('data-answer-id');
+                const actionUrl = "{% url 'answers:delete' 0 %}".replace('0', answerId);
+                deleteAnswerForm.action = actionUrl;
+                answerModal.style.display = 'block';
+            });
+        });
+
+        function closeAnswerModal() {
+            answerModal.style.display = 'none';
+        }
+
+        if (closeAnswerBtn) {
+            closeAnswerBtn.addEventListener('click', closeAnswerModal);
+        }
+        if (cancelAnswerBtn) {
+            cancelAnswerBtn.addEventListener('click', closeAnswerModal);
+        }
+
+        window.addEventListener('click', function(e) {
+            if (e.target === answerModal) {
+                closeAnswerModal();
             }
         });
     }

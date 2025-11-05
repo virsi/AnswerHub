@@ -81,3 +81,22 @@ def mark_correct(request, answer_id):
         messages.error(request, 'Вы можете отмечать правильные ответы только для своих вопросов.')
 
     return redirect('questions:detail', question_id=answer.question.id)
+
+@login_required
+def delete_answer(request, answer_id):
+    answer = get_object_or_404(Answer, id=answer_id)
+
+    # Проверяем, что пользователь - автор ответа
+    if answer.author != request.user:
+        messages.error(request, 'Вы можете удалять только свои ответы')
+        return redirect('questions:detail', question_id=answer.question.id)
+
+    if request.method == 'POST':
+        answer.delete_answer()
+        messages.success(request, 'Ответ успешно удален')
+        return redirect('questions:detail', question_id=answer.question.id)
+
+    # Если GET запрос, показываем подтверждение
+    return render(request, 'answers/confirm_delete.html', {
+        'answer': answer
+    })

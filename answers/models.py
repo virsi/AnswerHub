@@ -51,6 +51,11 @@ class Answer(models.Model):
             Index(fields=['votes']),
         ]
 
+    def delete_answer(self):
+        """Мягкое удаление ответа"""
+        self.is_active = False
+        self.save()
+        
     def __str__(self):
         return f"Ответ на вопрос: {self.question.title}"
 
