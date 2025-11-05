@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Index
 from users.models import User
 from questions.models import Question
 
@@ -43,6 +44,12 @@ class Answer(models.Model):
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
         ordering = ['-is_correct', '-votes', 'created_at']
+        indexes = [
+            Index(fields=['question', 'is_correct', '-votes']),
+            Index(fields=['author', 'created_at']),
+            Index(fields=['is_active', 'created_at']),
+            Index(fields=['votes']),
+        ]
 
     def __str__(self):
         return f"Ответ на вопрос: {self.question.title}"
@@ -72,6 +79,10 @@ class AnswerVote(models.Model):
         verbose_name = 'Голос за ответ'
         verbose_name_plural = 'Голоса за ответы'
         unique_together = ['user', 'answer']
+        indexes = [
+            Index(fields=['user', 'answer']),
+            Index(fields=['answer', 'value']),
+        ]
 
     def __str__(self):
         return f"{self.user} voted {self.value} for {self.answer}"

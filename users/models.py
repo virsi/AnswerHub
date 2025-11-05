@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Index
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
@@ -10,7 +11,8 @@ class User(AbstractUser):
     )
     reputation = models.IntegerField(
         default=0,
-        verbose_name='Репутация'
+        verbose_name='Репутация',
+        db_index=True  # Индекс для сортировки пользователей
     )
     about = models.TextField(
         max_length=500,
@@ -28,13 +30,19 @@ class User(AbstractUser):
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата регистрации'
+        verbose_name='Дата регистрации',
+        db_index=True  # Индекс для сортировки по дате регистрации
     )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ['-created_at']
+        indexes = [
+            Index(fields=['-reputation']),
+            Index(fields=['-created_at']),
+            Index(fields=['username']),  # Уже есть от AbstractUser, но для ясности
+        ]
 
     def __str__(self):
         return self.username

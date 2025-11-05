@@ -1,14 +1,17 @@
 from django.db import models
+from django.db.models import Index
 from django.urls import reverse
 from users.models import User
 
 class Question(models.Model):
     title = models.CharField(
         max_length=200,
-        verbose_name='Заголовок вопроса'
+        verbose_name='Заголовок вопроса',
+        db_index=True  # Индекс для поиска
     )
     content = models.TextField(
-        verbose_name='Текст вопроса'
+        verbose_name='Текст вопроса',
+        db_index=True  # Индекс для полнотекстового поиска
     )
     author = models.ForeignKey(
         User,
@@ -16,7 +19,7 @@ class Question(models.Model):
         related_name='questions',
         verbose_name='Автор'
     )
-    tags = models.ManyToManyField(  # ДОБАВЛЯЕМ ЭТО
+    tags = models.ManyToManyField(
         'tags.Tag',
         blank=True,
         related_name='questions',
@@ -24,7 +27,8 @@ class Question(models.Model):
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата создания'
+        verbose_name='Дата создания',
+        db_index=True  # Индекс для сортировки
     )
     updated_at = models.DateTimeField(
         auto_now=True,
@@ -32,7 +36,8 @@ class Question(models.Model):
     )
     votes = models.IntegerField(
         default=0,
-        verbose_name='Голоса'
+        verbose_name='Голоса',
+        db_index=True  # Индекс для сортировки по популярности
     )
     views = models.IntegerField(
         default=0,
@@ -40,13 +45,20 @@ class Question(models.Model):
     )
     is_active = models.BooleanField(
         default=True,
-        verbose_name='Активный'
+        verbose_name='Активный',
+        db_index=True  # Индекс для фильтрации
     )
 
     class Meta:
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
         ordering = ['-created_at']
+        indexes = [
+            Index(fields=['-created_at', 'is_active']),
+            Index(fields=['votes', 'is_active']),
+            Index(fields=['author', 'created_at']),
+            Index(fields=['is_active', 'author']),
+        ]
 
     def __str__(self):
         return self.title
@@ -82,6 +94,11 @@ class QuestionVote(models.Model):
         verbose_name = 'Голос за вопрос'
         verbose_name_plural = 'Голоса за вопросы'
         unique_together = ['user', 'question']
+        indexes = [
+            Index(fields=['user', 'question']),
+            Index(fields=['question', 'value']),
+            Index(fields=['user', 'created_at']),
+        ]
 
     def __str__(self):
         return f"{self.user} voted {self.value} for {self.question}"
