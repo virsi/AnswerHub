@@ -63,6 +63,13 @@ class Question(models.Model):
     def __str__(self):
         return self.title
 
+    def delete_question(self):
+        """Мягкое удаление вопроса"""
+        self.is_active = False
+        self.save()
+        # Также деактивируем все ответы к этому вопросу
+        self.answers.update(is_active=False)
+
     def get_absolute_url(self):
         return reverse('questions:detail', kwargs={'question_id': self.id})
 

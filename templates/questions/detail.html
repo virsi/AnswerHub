@@ -104,6 +104,13 @@
         </div>
         {% endfor %}
 
+        <!-- Кнопка удаления для автора (после ответов) -->
+        {% if user == question.author %}
+        <div class="delete-action">
+            <button class="btn btn-danger" id="deleteQuestionBtn">🗑️ Удалить вопрос</button>
+        </div>
+        {% endif %}
+
         <!-- Форма ответа -->
         {% if user.is_authenticated %}
         <div class="answer-form-card">
@@ -123,9 +130,138 @@
         {% endif %}
     </div>
 
+    <!-- Модальное окно подтверждения удаления -->
+    {% if user == question.author %}
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Удаление вопроса</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить вопрос "<strong>{{ question.title }}</strong>"?</p>
+                <p>Это действие нельзя отменить. Все ответы на этот вопрос также будут скрыты.</p>
+            </div>
+            <div class="modal-actions">
+                <form method="post" action="{% url 'questions:delete' question.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить вопрос</button>
+                </form>
+                <button class="btn btn-outline modal-cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <aside class="sidebar">
         {% include 'includes/sidebar_popular_tags.html' %}
         {% include 'includes/sidebar_top_users.html' %}
     </aside>
 </div>
+
+<style>
+/* Стили для кнопки удаления */
+.delete-action {
+    margin: 2rem 0;
+    text-align: right;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+    border: 1px solid var(--danger);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    box-shadow: 0 2px 4px rgba(250, 82, 82, 0.3);
+}
+
+.btn-danger:hover {
+    background: #e03131;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(250, 82, 82, 0.4);
+}
+
+/* Модальное окно */
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--bg-main);
+    margin: 15% auto;
+    padding: 0;
+    border-radius: var(--radius);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteBtn = document.getElementById('deleteQuestionBtn');
+    if (deleteBtn) {
+        const modal = document.getElementById('deleteModal');
+        const closeBtn = document.querySelector('.modal-close');
+        const cancelBtn = document.querySelector('.modal-cancel');
+
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+        });
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        window.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

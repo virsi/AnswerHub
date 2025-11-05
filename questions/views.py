@@ -6,6 +6,7 @@ from tags.models import Tag
 from .models import Question, QuestionVote
 from .forms import QuestionForm
 from answers.models import Answer
+from django.http import JsonResponse
 
 def paginate(objects_list, request, per_page=10):
     paginator = Paginator(objects_list, per_page)
@@ -149,3 +150,22 @@ def vote_question(request, question_id):
         question.save(update_fields=['votes'])
 
     return redirect('questions:detail', question_id=question.id)
+
+@login_required
+def delete_question(request, question_id):
+    question = get_object_or_404(Question, id=question_id)
+
+    # Проверяем, что пользователь - автор вопроса
+    if question.author != request.user:
+        messages.error(request, 'Вы можете удалять только свои вопросы')
+        return redirect('questions:detail', question_id=question.id)
+
+    if request.method == 'POST':
+        question.delete_question()
+        messages.success(request, 'Вопрос успешно удален')
+        return redirect('questions:list')
+
+    # Если GET запрос, показываем подтверждение
+    return render(request, 'questions/confirm_delete.html', {
+        'question': question
+    })
