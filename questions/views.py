@@ -25,7 +25,7 @@ def question_list(request):
     page = paginate(questions, request)
 
     # Получаем популярные теги
-    popular_tags = Tag.objects.all().order_by('-usage_count')[:10]
+    popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
 
     return render(request, 'questions/list.html', {
         'page': page,
@@ -38,7 +38,7 @@ def hot_questions(request):
     page = paginate(questions, request)
 
     # Получаем популярные теги
-    popular_tags = Tag.objects.all().order_by('-usage_count')[:10]
+    popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
 
     return render(request, 'questions/list.html', {
         'page': page,

@@ -38,7 +38,7 @@ def tag_detail(request, tag_name):
     page = paginate(questions, request, per_page=10)
 
     # Получаем популярные теги для сайдбара
-    popular_tags = Tag.objects.all().order_by('-usage_count')[:10]
+    popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
 
     return render(request, 'tags/detail.html', {
         'tag': tag,
