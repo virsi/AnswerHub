@@ -163,6 +163,10 @@ h1 {
 }
 
 /* Questions list */
+.questions-header {
+  margin-bottom: 12px;
+}
+
 .question-card {
   background: var(--bg-main);
   border: 1px solid var(--border);
