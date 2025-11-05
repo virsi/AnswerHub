@@ -10,4 +10,5 @@ urlpatterns = [
     path('answers/', include('answers.urls')),
     path('tags/', include('tags.urls')),
     path('', include('questions.urls')), #редирект
+    path('search/', include('search.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
