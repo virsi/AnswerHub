@@ -155,7 +155,7 @@ def vote_question(request, question_id):
 def delete_question(request, question_id):
     question = get_object_or_404(Question, id=question_id)
 
-    # Проверяем, что пользователь - автор вопроса
+    # TODO: Удалить проверку за ненадобностью
     if question.author != request.user:
         messages.error(request, 'Вы можете удалять только свои вопросы')
         return redirect('questions:detail', question_id=question.id)

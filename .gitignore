@@ -5,6 +5,7 @@
 __pycache__
 db.sqlite3
 media
+staticfiles/
 
 # Backup files #
 *.bak
@@ -122,3 +123,4 @@ GitHub.sublime-settings
 .DS_Store
 
 TODO.txt
+uploads/*
