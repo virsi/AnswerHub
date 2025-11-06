@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Задать вопрос - AnswerHub</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="index.html" class="logo">AnswerHub</a>
+
+                <form class="search-form">
+                    <input type="text" class="search-input" placeholder="Поиск вопросов...">
+                </form>
+
+                <div class="user-menu">
+                    <div class="user-avatar-small">
+                        <img src="./img/avatar-placeholder.jpg" alt="Аватар пользователя" class="avatar-img">
+                    </div>
+                    <a href="settings.html" class="btn btn-outline">Профиль</a>
+                    <a href="#" class="btn btn-outline">Выйти</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="main-layout">
+            <div class="content">
+                <div class="ask-form-container">
+                    <h1>Задать вопрос</h1>
+
+                    <form class="ask-form">
+                        <!-- Заголовок -->
+                        <div class="form-group">
+                            <label for="title" class="form-label">Заголовок</label>
+                            <div class="form-hint">Будьте конкретны и представьте, что вы задаете вопрос другому человеку</div>
+                            <input type="text" id="title" class="form-input" placeholder="Например: Как настроить Docker для Django проекта?" required minlength="10" maxlength="200">
+                            <div class="form-error">Заголовок должен содержать от 10 до 200 символов</div>
+                        </div>
+
+                        <!-- Текст вопроса -->
+                        <div class="form-group">
+                            <label for="question-body" class="form-label">Текст вопроса</label>
+                            <div class="form-hint">Введите всю информацию, необходимую для ответа на ваш вопрос</div>
+                            <textarea id="question-body" class="form-textarea" rows="12" placeholder="Опишите вашу проблему подробно..." required></textarea>
+                            <div class="form-error">Текст вопроса не может быть пустым</div>
+                        </div>
+
+                        <!-- Теги -->
+                        <div class="form-group">
+                            <label for="tags" class="form-label">Теги</label>
+                            <div class="form-hint">Добавьте до 3 тегов через запятую, описывающих тему вашего вопроса</div>
+                            <input type="text" id="tags" class="form-input" placeholder="docker, django, python" required>
+                            <div class="form-error">Можно добавить не более 3 тегов</div>
+                            <div class="tags-preview">
+                                <span class="tag">docker</span>
+                                <span class="tag">django</span>
+                            </div>
+                        </div>
+
+                        <!-- Кнопки -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">Опубликовать вопрос</button>
+                            <a href="index.html" class="btn btn-outline">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <aside class="sidebar">
+                <div class="sidebar-card">
+                    <h3>Как правильно задать вопрос</h3>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <strong>Опишите проблему подробно</strong>
+                            <p>Включите всю необходимую информацию для воспроизведения проблемы</p>
+                        </div>
+                        <div class="tip-item">
+                            <strong>Добавьте код</strong>
+                            <p>Если вопрос связан с кодом, включите соответствующие фрагменты</p>
+                        </div>
+                        <div class="tip-item">
+                            <strong>Выберите правильные теги</strong>
+                            <p>Это поможет вашему вопросу найти нужную аудиторию</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-card">
+                    <h3>Популярные теги</h3>
+                    <div class="tags">
+                        <a href="tag.html" class="tag">javascript</a>
+                        <a href="tag.html" class="tag">python</a>
+                        <a href="tag.html" class="tag">docker</a>
+                        <a href="tag.html" class="tag">django</a>
+                        <a href="tag.html" class="tag">react</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4 class="footer-title">AnswerHub</h4>
+                    <p class="footer-description">
+                        Сообщество разработчиков, где можно задавать вопросы, находить ответы и делиться знаниями.
+                    </p>
+                    <div class="footer-social">
+                        <a href="#" class="social-link" aria-label="GitHub">
+                            <span class="social-icon">🐙</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Twitter">
+                            <span class="social-icon">🐦</span>
+                        </a>
+                        <a href="#" class="social-link" aria-label="Telegram">
+                            <span class="social-icon">✈️</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Разделы</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html" class="footer-link">Главная</a></li>
+                        <li><a href="ask.html" class="footer-link">Задать вопрос</a></li>
+                        <li><a href="tag.html" class="footer-link">Теги</a></li>
+                        <li><a href="#" class="footer-link">Лучшие вопросы</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Помощь</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">О проекте</a></li>
+                        <li><a href="#" class="footer-link">Правила сообщества</a></li>
+                        <li><a href="#" class="footer-link">Частые вопросы</a></li>
+                        <li><a href="#" class="footer-link">Обратная связь</a></li>
+                        <li><a href="#" class="footer-link">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4 class="footer-title">Технологии</h4>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Python</a></li>
+                        <li><a href="#" class="footer-link">Django</a></li>
+                        <li><a href="#" class="footer-link">Docker</a></li>
+                        <li><a href="#" class="footer-link">JavaScript</a></li>
+                        <li><a href="#" class="footer-link">Базы данных</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-copyright">
+                    © 2025 AnswerHub. Все права защищены.
+                </div>
+                <div class="footer-stats">
+                    <span class="stat">Вопросы: 100,000+</span>
+                    <span class="stat">Ответы: 1,000,000+</span>
+                    <span class="stat">Пользователи: 10,000+</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
