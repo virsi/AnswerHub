@@ -99,13 +99,19 @@
 
 <script>
 // Скрипт для предпросмотра тегов
-document.getElementById('id_tags_input').addEventListener('input', function(e) {
-    const tagsPreview = document.getElementById('tags-preview');
-    const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+const tagsInput = document.getElementById('id_tags_input');
+const tagsPreview = document.getElementById('tags-preview');
 
-    tagsPreview.innerHTML = tags.map(tag =>
-        `<span class="tag">${tag}</span>`
-    ).join('');
-});
+if (tagsInput && tagsPreview) {
+    tagsInput.addEventListener('input', function(e) {
+        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+        tagsPreview.innerHTML = tags.map(tag => {
+            const span = document.createElement('span');
+            span.className = 'tag';
+            span.textContent = tag;
+            return span.outerHTML;
+        }).join('');
+    });
+}
 </script>
 {% endblock %}

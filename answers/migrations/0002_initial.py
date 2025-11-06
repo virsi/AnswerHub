@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    initial = True
+    #initial = True
 
     dependencies = [
         ('answers', '0001_initial'),

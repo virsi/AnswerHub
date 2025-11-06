@@ -131,7 +131,18 @@ class ProfileEditForm(forms.ModelForm):
         if new_password or new_password_confirm:
             if not current_password:
                 raise forms.ValidationError('Для смены пароля введите текущий пароль')
+            if not self.instance.check_password(current_password):
+                raise forms.ValidationError('Текущий пароль введен неверно')
             if new_password != new_password_confirm:
                 raise forms.ValidationError('Новые пароли не совпадают')
 
         return cleaned_data
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        new_password = self.cleaned_data.get('new_password')
+        if new_password:
+            user.set_password(new_password)
+        if commit:
+            user.save()
+        return user

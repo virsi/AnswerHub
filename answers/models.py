@@ -3,6 +3,7 @@ from django.db.models import Index
 from users.models import User
 from questions.models import Question
 
+
 class Answer(models.Model):
     content = models.TextField(
         verbose_name='Текст ответа'
@@ -55,7 +56,7 @@ class Answer(models.Model):
         """Мягкое удаление ответа"""
         self.is_active = False
         self.save()
-        
+
     def __str__(self):
         return f"Ответ на вопрос: {self.question.title}"
 

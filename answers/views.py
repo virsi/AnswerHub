@@ -5,8 +5,10 @@ from .models import Answer
 from .models import AnswerVote
 from .forms import AnswerForm
 from questions.models import Question
+from django.views.decorators.http import require_http_methods
 
 @login_required
+@require_http_methods(["POST"])
 def create_answer(request, question_id):
     question = get_object_or_404(Question, id=question_id, is_active=True)
 
@@ -26,6 +28,7 @@ def create_answer(request, question_id):
     return redirect('questions:detail', question_id=question.id)
 
 @login_required
+@require_http_methods(["POST"])
 def vote_answer(request, answer_id):
     answer = get_object_or_404(Answer, id=answer_id, is_active=True)
     value = request.POST.get('value')

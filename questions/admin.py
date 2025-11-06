@@ -14,3 +14,4 @@ class QuestionVoteAdmin(admin.ModelAdmin):
     list_display = ['user', 'question', 'value', 'created_at']
     list_filter = ['value', 'created_at']
     search_fields = ['user__username', 'question__title']
+    raw_id_fields = ['user', 'question']
