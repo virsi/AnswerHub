@@ -18,10 +18,6 @@ venv/
 # Database
 db.sqlite3
 
-# Static and media
-/static/
-/media/
-/uploads/
 
 # Docker
 Dockerfile

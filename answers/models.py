@@ -91,4 +91,4 @@ class AnswerVote(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.user} voted {self.value} for {self.answer}"
+        return f"{self.user_id} voted {self.value} for {self.answer_id}"

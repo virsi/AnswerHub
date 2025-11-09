@@ -2,6 +2,19 @@ from django.db import models
 from django.db.models import Index
 from django.urls import reverse
 from users.models import User
+from django.db import models as dj_models
+import datetime
+import random
+
+
+class QuestionManager(dj_models.Manager):
+    def new(self):
+        """Свежие вопросы"""
+        return self.get_queryset().filter(is_active=True).order_by('-created_at')
+
+    def best(self):
+        """Лучшие (популярные) вопросы"""
+        return self.get_queryset().filter(is_active=True).order_by('-votes', '-created_at')
 
 class Question(models.Model):
     title = models.CharField(
@@ -15,7 +28,7 @@ class Question(models.Model):
     )
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE,
+        on_delete=models.CASCADE, #TODO set null
         related_name='questions',
         verbose_name='Автор'
     )
@@ -75,6 +88,9 @@ class Question(models.Model):
 
     def answers_count(self):
         return self.answers.filter(is_active=True).count()
+
+    # Подключаем менеджер
+    objects = QuestionManager()
 
 class QuestionVote(models.Model):
     user = models.ForeignKey(

@@ -10,12 +10,15 @@
         <p class="auth-subtitle">Войдите, чтобы задавать вопросы и отвечать другим</p>
 
         {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                        <button type="button" class="alert-close" aria-label="Закрыть">
+                            ×
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
         <form class="auth-form" method="post">
             {% csrf_token %}

@@ -22,30 +22,15 @@ def paginate(objects_list, request, per_page=10):
     return page
 
 def question_list(request):
-    questions = Question.objects.filter(is_active=True).select_related('author').prefetch_related('tags')
-    page = paginate(questions, request)
-
-    # Получаем популярные теги
+    # Используем менеджер для получения свежих вопросов
+    page = paginate(Question.objects.new().select_related('author').prefetch_related('tags'), request)
     popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
-
-    return render(request, 'questions/list.html', {
-        'page': page,
-        'title': 'Новые вопросы',
-        'popular_tags': popular_tags
-    })
+    return render(request, 'questions/list.html', {'page': page, 'title': 'Новые вопросы', 'popular_tags': popular_tags})
 
 def hot_questions(request):
-    questions = Question.objects.filter(is_active=True).order_by('-votes', '-created_at').prefetch_related('tags')
-    page = paginate(questions, request)
-
-    # Получаем популярные теги
+    page = paginate(Question.objects.best().prefetch_related('tags').select_related('author'), request)
     popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
-
-    return render(request, 'questions/list.html', {
-        'page': page,
-        'title': 'Популярные вопросы',
-        'popular_tags': popular_tags
-    })
+    return render(request, 'questions/list.html', {'page': page, 'title': 'Популярные вопросы', 'popular_tags': popular_tags})
 
 def question_detail(request, question_id):
     question = get_object_or_404(
