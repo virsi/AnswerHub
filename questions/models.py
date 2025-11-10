@@ -56,6 +56,13 @@ class Question(models.Model):
         default=0,
         verbose_name='Просмотры'
     )
+    # Список пользователей, которые посмотрели вопрос — нужен для подсчета уникальных просмотров
+    viewed_by = models.ManyToManyField(
+        User,
+        blank=True,
+        related_name='viewed_questions',
+        verbose_name='Просмотревшие'
+    )
     is_active = models.BooleanField(
         default=True,
         verbose_name='Активный',

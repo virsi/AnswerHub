@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from tags.models import Tag
 from .models import Question, QuestionVote
+from django.db.models import F
 from .forms import QuestionForm
 from answers.models import Answer
 from django.http import JsonResponse
@@ -39,9 +40,14 @@ def question_detail(request, question_id):
         is_active=True
     )
 
-    # Увеличиваем счетчик просмотров
-    question.views += 1
-    question.save(update_fields=['views'])
+    # Увеличиваем счетчик просмотров только для аутентифицированных пользователей
+    # и только один раз на пользователя (1 пользователь = 1 просмотр)
+    if request.user.is_authenticated:
+        # если пользователь ещё не в списке просмотров — добавляем и инкрементируем
+        if not question.viewed_by.filter(id=request.user.id).exists():
+            question.viewed_by.add(request.user)
+            # atomic-ish update через F выражение
+            Question.objects.filter(id=question.id).update(views=F('views') + 1)
 
     answers = question.answers.filter(is_active=True).select_related('author')
     page = paginate(answers, request, per_page=10)
