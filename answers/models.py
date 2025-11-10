@@ -47,7 +47,8 @@ class Answer(models.Model):
         verbose_name_plural = 'Ответы'
         ordering = ['-is_correct', '-votes', 'created_at']
         indexes = [
-            Index(fields=['question', 'is_correct', '-votes']),
+            # Составной индекс, включающий created_at, чтобы покрыть ordering
+            Index(fields=['question', 'is_correct', '-votes', 'created_at']),
             Index(fields=['author', 'created_at']),
             Index(fields=['is_active', 'created_at']),
             Index(fields=['votes']),

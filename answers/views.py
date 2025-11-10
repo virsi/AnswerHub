@@ -11,19 +11,17 @@ from django.views.decorators.http import require_http_methods
 @require_http_methods(["POST"])
 def create_answer(request, question_id):
     question = get_object_or_404(Question, id=question_id, is_active=True)
+    form = AnswerForm(request.POST)
+    if form.is_valid():
+        answer = form.save(commit=False)
+        answer.question = question
+        answer.author = request.user
+        answer.save()
 
-    if request.method == 'POST':
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.save(commit=False)
-            answer.question = question
-            answer.author = request.user
-            answer.save()
-
-            messages.success(request, 'Ваш ответ успешно добавлен!')
-            return redirect('questions:detail', question_id=question.id)
-        else:
-            messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
+        messages.success(request, 'Ваш ответ успешно добавлен!')
+        return redirect('questions:detail', question_id=question.id)
+    else:
+        messages.error(request, 'Пожалуйста, исправьте ошибки в форме.')
 
     return redirect('questions:detail', question_id=question.id)
 

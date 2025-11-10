@@ -8,6 +8,7 @@ from django.db.models import F
 from .forms import QuestionForm
 from answers.models import Answer
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 def paginate(objects_list, request, per_page=10):
     paginator = Paginator(objects_list, per_page)
@@ -105,6 +106,7 @@ def ask_question(request):
     return render(request, 'questions/ask.html', {'form': form})
 
 @login_required
+@require_http_methods(["POST"])
 def vote_question(request, question_id):
     question = get_object_or_404(Question, id=question_id, is_active=True)
     value = request.POST.get('value')
