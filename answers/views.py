@@ -1,12 +1,10 @@
+# answers/views.py
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views.generic import CreateView, View
-from django.views.generic.edit import FormMixin
 from django.urls import reverse_lazy
 from django.http import JsonResponse
-from django.views.decorators.http import require_http_methods
-from django.utils.decorators import method_decorator
 
 from .models import Answer, AnswerVote
 from .forms import AnswerForm
@@ -16,7 +14,7 @@ class AnswerCreateView(LoginRequiredMixin, CreateView):
     """Создание нового ответа"""
     model = Answer
     form_class = AnswerForm
-    template_name = 'questions/detail.html'  # Используем тот же шаблон
+    template_name = 'questions/detail.html'
 
     def form_valid(self, form):
         question = get_object_or_404(Question, id=self.kwargs['question_id'], is_active=True)
@@ -33,65 +31,67 @@ class AnswerCreateView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         return reverse_lazy('questions:detail', kwargs={'question_id': self.kwargs['question_id']})
 
-# answers/views.py
 class AnswerVoteView(LoginRequiredMixin, View):
     """Голосование за ответ"""
 
     def post(self, request, answer_id):
+        if not request.user.is_authenticated:
+            return JsonResponse({'success': False, 'error': 'Not authenticated'}, status=401)
+
         answer = get_object_or_404(Answer, id=answer_id, is_active=True)
         value = request.POST.get('value')
 
-        if value in ['1', '-1']:
+        if not value:
+            return JsonResponse({'success': False, 'error': 'Value parameter is required'}, status=400)
+
+        try:
             value = int(value)
+        except (TypeError, ValueError):
+            return JsonResponse({'success': False, 'error': 'Value must be integer'}, status=400)
 
-            # Проверяем, не голосовал ли уже пользователь
-            existing_vote = AnswerVote.objects.filter(
-                user=request.user,
-                answer=answer
-            ).first()
+        if value not in [1, -1]:
+            return JsonResponse({'success': False, 'error': 'Value must be 1 or -1'}, status=400)
 
-            voted = False
-            vote_value = 0
+        existing_vote = AnswerVote.objects.filter(
+            user=request.user,
+            answer=answer
+        ).first()
 
-            if existing_vote:
-                if existing_vote.value == value:
-                    # Удаляем голос если тот же самый
-                    existing_vote.delete()
-                    answer.votes -= value
-                    voted = False
-                    vote_value = 0
-                else:
-                    # Меняем голос
-                    answer.votes -= existing_vote.value
-                    existing_vote.value = value
-                    existing_vote.save(update_fields=['value'])
-                    answer.votes += value
-                    voted = True
-                    vote_value = value
+        voted = False
+        vote_value = 0
+
+        if existing_vote:
+            if existing_vote.value == value:
+                existing_vote.delete()
+                answer.votes -= value
+                voted = False
             else:
-                # Новый голос
-                AnswerVote.objects.create(
-                    user=request.user,
-                    answer=answer,
-                    value=value
-                )
+                answer.votes -= existing_vote.value
+                existing_vote.value = value
+                existing_vote.save(update_fields=['value'])
                 answer.votes += value
                 voted = True
                 vote_value = value
+        else:
+            AnswerVote.objects.create(
+                user=request.user,
+                answer=answer,
+                value=value
+            )
+            answer.votes += value
+            voted = True
+            vote_value = value
 
-            answer.save(update_fields=['votes'])
+        answer.save(update_fields=['votes'])
 
-            # Если AJAX запрос, возвращаем JSON
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({
-                    'success': True,
-                    'votes': answer.votes,
-                    'voted': voted,
-                    'value': vote_value
-                })
+        response_data = {
+            'success': True,
+            'votes': answer.votes,
+            'voted': voted,
+            'value': vote_value
+        }
 
-        # Если не AJAX, делаем редирект
-        return redirect('questions:detail', question_id=answer.question.id)
+        return JsonResponse(response_data)
 
 class AnswerMarkCorrectView(LoginRequiredMixin, View):
     """Отметка ответа как правильного"""
@@ -99,18 +99,13 @@ class AnswerMarkCorrectView(LoginRequiredMixin, View):
     def post(self, request, answer_id):
         answer = get_object_or_404(Answer, id=answer_id)
 
-        # Проверяем, что пользователь - автор вопроса
         if answer.question.author == request.user:
-            # Снимаем отметку "правильный" с других ответов
             Answer.objects.filter(question=answer.question).update(is_correct=False)
-
-            # Ставим отметку текущему ответу
             answer.is_correct = True
             answer.save(update_fields=['is_correct'])
 
             messages.success(request, 'Ответ отмечен как правильный!')
 
-            # Если AJAX запрос
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True})
         else:
@@ -127,12 +122,10 @@ class AnswerDeleteView(LoginRequiredMixin, View):
     def get(self, request, answer_id):
         answer = get_object_or_404(Answer, id=answer_id)
 
-        # Проверяем, что пользователь - автор ответа
         if answer.author != request.user:
             messages.error(request, 'Вы можете удалять только свои ответы')
             return redirect('questions:detail', question_id=answer.question.id)
 
-        # Показываем подтверждение
         from django.shortcuts import render
         return render(request, 'answers/confirm_delete.html', {
             'answer': answer
@@ -141,7 +134,6 @@ class AnswerDeleteView(LoginRequiredMixin, View):
     def post(self, request, answer_id):
         answer = get_object_or_404(Answer, id=answer_id)
 
-        # Проверяем, что пользователь - автор ответа
         if answer.author != request.user:
             messages.error(request, 'Вы можете удалять только свои ответы')
             return redirect('questions:detail', question_id=answer.question.id)
