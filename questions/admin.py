@@ -7,6 +7,8 @@ class QuestionAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'created_at']
     search_fields = ['title', 'content']
     readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['author']
+    autocomplete_fields = ['tags']
     list_per_page = 20
 
 @admin.register(QuestionVote)
