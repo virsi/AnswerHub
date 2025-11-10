@@ -15,3 +15,9 @@ class AnswerForm(forms.ModelForm):
         labels = {
             'content': 'Ваш ответ',
         }
+
+    def clean_content(self):
+        content = self.cleaned_data.get('content')
+        if content and len(content.strip()) < 10:
+            raise forms.ValidationError('Ответ должен содержать минимум 10 символов')
+        return content
