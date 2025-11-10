@@ -66,6 +66,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'tags.context_processors.popular_tags',
+                'users.context_processors.top_users',
             ],
         },
     },
