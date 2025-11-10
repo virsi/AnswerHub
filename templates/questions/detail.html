@@ -38,11 +38,18 @@
                     <span>спросил {{ question.created_at|timesince }} назад</span>
                     <span>просмотров: {{ question.views }}</span>
                     <div class="author-info">
+                        {% if question.author %}
                         <div class="user-avatar-small">
                             <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
                                  alt="Аватар {{ question.author.username }}" class="avatar-img">
                         </div>
                         <span>{{ question.author.username }}</span>
+                        {% else %}
+                        <div class="user-avatar-small">
+                            <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
+                        </div>
+                        <span>Пользователь удален</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -85,7 +92,7 @@
                     {% endif %}
 
                     <!-- Кнопка удаления ответа для автора -->
-                    {% if user == answer.author %}
+                    {% if answer.author and user == answer.author %}
                     <div class="answer-actions">
                         <button class="btn-text btn-text-danger delete-answer-btn"
                                 data-answer-id="{{ answer.id }}">
@@ -97,11 +104,18 @@
                     <div class="meta">
                         <span>ответил {{ answer.created_at|timesince }} назад</span>
                         <div class="author-info">
+                            {% if answer.author %}
                             <div class="user-avatar-small">
                                 <img src="{% if answer.author.avatar %}{{ answer.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
                                      alt="Аватар {{ answer.author.username }}" class="avatar-img">
                             </div>
                             <span>{{ answer.author.username }}</span>
+                            {% else %}
+                            <div class="user-avatar-small">
+                                <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
+                            </div>
+                            <span>Пользователь удален</span>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -115,7 +129,7 @@
         {% endfor %}
 
         <!-- Кнопка удаления для автора (после ответов) -->
-        {% if user == question.author %}
+        {% if question.author and user == question.author %}
         <div class="delete-action">
             <button class="btn-text btn-text-danger" id="deleteQuestionBtn">Удалить вопрос</button>
         </div>

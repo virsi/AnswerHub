@@ -28,7 +28,8 @@ class Question(models.Model):
     )
     author = models.ForeignKey(
         User,
-        on_delete=models.CASCADE, #TODO set null
+        on_delete=models.SET_NULL,
+        null=True,
         related_name='questions',
         verbose_name='Автор'
     )
