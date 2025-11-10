@@ -21,7 +21,7 @@ class AnswerManager(models.Manager):
 
         # Ставим пометку текущему ответу
         answer.is_correct = True
-        answer.save()
+        answer.save(update_fields=['is_correct'])
         return answer
 
 
@@ -45,7 +45,7 @@ class AnswerVoteManager(models.Manager):
                 # Меняем голос
                 answer.votes -= existing_vote.value
                 existing_vote.value = value
-                existing_vote.save()
+                existing_vote.save(update_fields=['value'])
                 answer.votes += value
         else:
             # Новый голос

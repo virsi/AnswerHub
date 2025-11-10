@@ -62,6 +62,6 @@ class QuestionForm(forms.ModelForm):
                     tag.usage_count = 1
                 else:
                     tag.usage_count += 1
-                tag.save()
+                tag.save(update_fields=['usage_count'])
 
         return question

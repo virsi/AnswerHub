@@ -49,7 +49,7 @@ def vote_answer(request, answer_id):
                 # Меняем голос
                 answer.votes -= existing_vote.value
                 existing_vote.value = value
-                existing_vote.save()
+                existing_vote.save(update_fields=['value'])
                 answer.votes += value
         else:
             # Новый голос
@@ -75,7 +75,7 @@ def mark_correct(request, answer_id):
 
         # Ставим отметку текущему ответу
         answer.is_correct = True
-        answer.save()
+        answer.save(update_fields=['is_correct'])
 
         messages.success(request, 'Ответ отмечен как правильный!')
     else:

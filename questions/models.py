@@ -87,7 +87,7 @@ class Question(models.Model):
     def delete_question(self):
         """Мягкое удаление вопроса"""
         self.is_active = False
-        self.save()
+        self.save(update_fields=['is_active'])
         # Также деактивируем все ответы к этому вопросу
         self.answers.update(is_active=False)
 

@@ -91,7 +91,7 @@ def ask_question(request):
                         tag.usage_count = 1
                     else:
                         tag.usage_count += 1
-                    tag.save()
+                    tag.save(update_fields=['usage_count'])
                     print(f"Добавлен тег '{tag_name}' к вопросу '{question.title}'")
 
             # ПРОВЕРКА: убедимся что теги добавились
@@ -129,7 +129,7 @@ def vote_question(request, question_id):
                 # Меняем голос
                 question.votes -= existing_vote.value
                 existing_vote.value = value
-                existing_vote.save()
+                existing_vote.save(update_fields=['value'])
                 question.votes += value
         else:
             # Новый голос

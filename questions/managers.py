@@ -88,7 +88,7 @@ class QuestionVoteManager(models.Manager):
                 # Меняем голос
                 question.votes -= existing_vote.value
                 existing_vote.value = value
-                existing_vote.save()
+                existing_vote.save(update_fields=['value'])
                 question.votes += value
                 print(f"DEBUG: Vote changed, new votes: {question.votes}")  # Отладка
         else:

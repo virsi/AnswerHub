@@ -57,7 +57,7 @@ class Answer(models.Model):
     def delete_answer(self):
         """Мягкое удаление ответа"""
         self.is_active = False
-        self.save()
+        self.save(update_fields=['is_active'])
 
     def __str__(self):
         return f"Ответ на вопрос: {self.question.title}"
