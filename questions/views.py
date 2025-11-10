@@ -105,8 +105,8 @@ def ask_question(request):
 
     return render(request, 'questions/ask.html', {'form': form})
 
-@login_required
 @require_http_methods(["POST"])
+@login_required
 def vote_question(request, question_id):
     question = get_object_or_404(Question, id=question_id, is_active=True)
     value = request.POST.get('value')
