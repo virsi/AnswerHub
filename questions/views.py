@@ -60,26 +60,33 @@ class QuestionDetailView(DetailView):
     def get_queryset(self):
         return Question.objects.filter(is_active=True).select_related('author').prefetch_related('tags')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        question = self.get_object()
 
-        # Получаем ответы с пагинацией
-        answers = question.answers.filter(is_active=True).select_related('author')
-        paginator = Paginator(answers, 10)
-        page_number = self.request.GET.get('page')
-        page_obj = paginator.get_page(page_number)
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    question = self.get_object()
 
-        context['page_obj'] = page_obj
-        context['popular_tags'] = Tag.objects.all().order_by('-usage_count')[:10]
+    # Явно получаем свежие активные ответы, игнорируя кэш
+    from answers.models import Answer
+    answers = Answer.objects.filter(
+        question_id=question.id,  # Используем ID вместо объекта
+        is_active=True
+    ).select_related('author').order_by('-is_correct', '-votes', 'created_at')
 
-        # Отмечаем просмотр для аутентифицированного пользователя
-        if self.request.user.is_authenticated:
-            if not question.viewed_by.filter(id=self.request.user.id).exists():
-                question.viewed_by.add(self.request.user)
-                Question.objects.filter(id=question.id).update(views=models.F('views') + 1)
+    paginator = Paginator(answers, 10)
+    page_number = self.request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
-        return context
+    context['page_obj'] = page_obj
+    context['answers'] = answers  # Добавьте это для совместимости
+    context['popular_tags'] = Tag.objects.all().order_by('-usage_count')[:10]
+
+    # Просмотры
+    if self.request.user.is_authenticated:
+        if not question.viewed_by.filter(id=self.request.user.id).exists():
+            question.viewed_by.add(self.request.user)
+            Question.objects.filter(id=question.id).update(views=models.F('views') + 1)
+
+    return context
 
 class QuestionCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Question

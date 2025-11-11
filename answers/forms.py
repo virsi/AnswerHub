@@ -17,7 +17,12 @@ class AnswerForm(forms.ModelForm):
         }
 
     def clean_content(self):
-        content = self.cleaned_data.get('content')
-        if content and len(content.strip()) < 10:
+        content = self.cleaned_data.get('content', '').strip()
+
+        if len(content) < 10:
             raise forms.ValidationError('Ответ должен содержать минимум 10 символов')
+
+        if len(content) > 5000:
+            raise forms.ValidationError('Ответ слишком длинный (максимум 5000 символов)')
+
         return content

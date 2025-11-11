@@ -1,5 +1,5 @@
 # answers/views.py
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.views.generic import CreateView, View
@@ -26,10 +26,10 @@ class AnswerCreateView(LoginRequiredMixin, CreateView):
 
     def form_invalid(self, form):
         messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
-        return redirect('questions:detail', question_id=self.kwargs['question_id'])
+        return redirect('questions:detail', pk=self.kwargs['question_id'])
 
     def get_success_url(self):
-        return reverse_lazy('questions:detail', kwargs={'question_id': self.kwargs['question_id']})
+        return reverse_lazy('questions:detail', kwargs={'pk': self.kwargs['question_id']})
 
 class AnswerVoteView(LoginRequiredMixin, View):
     """Голосование за ответ"""
@@ -94,52 +94,57 @@ class AnswerVoteView(LoginRequiredMixin, View):
         return JsonResponse(response_data)
 
 class AnswerMarkCorrectView(LoginRequiredMixin, View):
-    """Отметка ответа как правильного"""
-
     def post(self, request, answer_id):
-        answer = get_object_or_404(Answer, id=answer_id)
+        answer = get_object_or_404(Answer, id=answer_id, is_active=True)
+        question = answer.question
 
-        if answer.question.author == request.user:
-            Answer.objects.filter(question=answer.question).update(is_correct=False)
-            answer.is_correct = True
-            answer.save(update_fields=['is_correct'])
+        # Только автор вопроса может отмечать правильный ответ
+        if question.author != request.user:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Нет прав на изменение.'}, status=403)
+            return redirect('questions:detail', question.id)
 
-            messages.success(request, 'Ответ отмечен как правильный!')
+        # Сохраняем старый правильный ответ (если есть)
+        prev = Answer.objects.filter(question=question, is_correct=True).first()
+        prev_id = prev.id if prev else None
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': True})
-        else:
-            messages.error(request, 'Вы можете отмечать правильные ответы только для своих вопросов.')
+        # Сбрасываем флаг у всех ответов
+        Answer.objects.filter(question=question, is_correct=True).update(is_correct=False)
 
-            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                return JsonResponse({'success': False, 'error': 'Недостаточно прав'})
+        # Устанавливаем новый правильный
+        answer.is_correct = True
+        answer.is_active = True
+        answer.save(update_fields=['is_correct'])
 
-        return redirect('questions:detail', question_id=answer.question.id)
+        # Возвращаем JSON для AJAX
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'answer_id': answer.id,
+                'prev_id': prev_id,
+            })
+
+        return redirect('questions:detail', question.id)
+
 
 class AnswerDeleteView(LoginRequiredMixin, View):
-    """Удаление ответа"""
-
-    def get(self, request, answer_id):
-        answer = get_object_or_404(Answer, id=answer_id)
-
-        if answer.author != request.user:
-            messages.error(request, 'Вы можете удалять только свои ответы')
-            return redirect('questions:detail', question_id=answer.question.id)
-
-        from django.shortcuts import render
-        return render(request, 'answers/confirm_delete.html', {
-            'answer': answer
-        })
-
     def post(self, request, answer_id):
-        answer = get_object_or_404(Answer, id=answer_id)
+        answer = get_object_or_404(Answer, id=answer_id, is_active=True)
+        question = answer.question
 
-        if answer.author != request.user:
-            messages.error(request, 'Вы можете удалять только свои ответы')
-            return redirect('questions:detail', question_id=answer.question.id)
+        if answer.author != request.user and question.author != request.user:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Нет прав на удаление.'}, status=403)
+            return redirect('questions:detail', question.id)
 
-        question_id = answer.question.id
+        # Можно физически удалить или пометить флагом
         answer.delete_answer()
-        messages.success(request, 'Ответ успешно удален')
 
-        return redirect('questions:detail', question_id=question_id)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'answer_id': answer_id,
+                'answers_count': question.answers.count()
+            })
+
+        return redirect('questions:detail', question.id)

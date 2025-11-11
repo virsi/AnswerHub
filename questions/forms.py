@@ -44,6 +44,18 @@ class QuestionForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
+    def clean_title(self):
+        """Проверка длины заголовка"""
+        title = self.cleaned_data.get('title', '').strip()
+
+        if len(title) < 10:
+            raise forms.ValidationError('Заголовок вопроса слишком короткий (минимум 10 символов)')
+
+        if len(title) > 50:
+            raise forms.ValidationError('Заголовок вопроса слишком длинный (максимум 50 символов)')
+
+        return title
+
     def clean_tags_input(self):
         tags_input = self.cleaned_data.get('tags_input', '')
         if not tags_input:
@@ -56,8 +68,8 @@ class QuestionForm(forms.ModelForm):
 
         # Проверяем длину каждого тега
         for tag_name in tag_names:
-            if len(tag_name) > 50:
-                raise forms.ValidationError(f'Тег "{tag_name}" слишком длинный (максимум 50 символов)')
+            if len(tag_name) > 15:
+                raise forms.ValidationError(f'Тег "{tag_name}" слишком длинный (максимум 15 символов)')
             if len(tag_name) < 2:
                 raise forms.ValidationError(f'Тег "{tag_name}" слишком короткий (минимум 2 символа)')
 

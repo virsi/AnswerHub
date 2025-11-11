@@ -1994,7 +1994,7 @@ code {
     width: 100%;
 }
 
-  .form-input {
+.form-input {
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--border);
@@ -2002,4 +2002,155 @@ code {
   font-size: 1rem;
   transition: all 0.2s;
   margin-block: 10px;
+}
+
+/* ========== НОВЫЕ СТИЛИ ДЛЯ АВТОМАТИЧЕСКОГО ПЕРЕНОСА ТЕКСТА ========== */
+
+/* Стили для автоматического переноса текста в вопросах и ответах */
+.main-layout .content .question-content,
+.main-layout .content .answer-content {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    width: 100%;
+}
+
+.main-layout .content .question-body,
+.main-layout .content .answer-body {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    line-height: 1.6;
+}
+
+/* Обеспечиваем правильное отображение длинных слов и URL */
+.main-layout .content .question-body p,
+.main-layout .content .answer-body p {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    margin-bottom: 1em;
+}
+
+/* Для кода и преформатированного текста */
+.main-layout .content .question-body pre,
+.main-layout .content .answer-body pre {
+    white-space: pre-wrap !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 100% !important;
+    overflow-x: auto;
+    background: var(--bg-secondary);
+    padding: 1em;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    margin: 1em 0;
+}
+
+.main-layout .content .question-body code,
+.main-layout .content .answer-body code {
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    word-break: break-all !important;
+    background: var(--bg-secondary);
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+/* Для таблиц */
+.main-layout .content .question-body table,
+.main-layout .content .answer-body table {
+    max-width: 100% !important;
+    overflow-x: auto;
+    display: block;
+}
+
+
+/* Обеспечиваем адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .main-layout .content .question-body,
+    .main-layout .content .answer-body {
+        font-size: 14px !important;
+    }
+
+    .main-layout .content .question-body pre,
+    .main-layout .content .answer-body pre {
+        font-size: 12px !important;
+    }
+}
+
+/* ========== СТИЛИ ДЛЯ УВЕДОМЛЕНИЙ ========== */
+
+/* Контейнер для уведомлений */
+.alerts-container {
+    position: fixed !important;
+    top: 80px !important;
+    right: 20px !important;
+    z-index: 1000 !important;
+    max-width: 400px !important;
+    width: 100%;
+}
+
+/* Анимация для уведомлений */
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+.alert {
+    animation: slideInRight 0.3s ease-out !important;
+    margin-bottom: 10px;
+}
+
+.alert.hiding {
+    animation: slideOutRight 0.3s ease-in !important;
+}
+
+/* Стили для voted состояния кнопок голосования */
+.vote-btn.voted {
+    background-color: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+.vote-btn.voted.vote-up {
+    background-color: var(--success) !important;
+    border-color: var(--success) !important;
+}
+
+.vote-btn.voted.vote-down {
+    background-color: var(--danger) !important;
+    border-color: var(--danger) !important;
+}
+
+/* Обеспечиваем правильное отображение контента */
+.main-layout .content .question-content,
+.main-layout .content .answer-content {
+    max-width: 100% !important;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main-layout .content {
+    max-width: 100%;
+    overflow: hidden;
 }

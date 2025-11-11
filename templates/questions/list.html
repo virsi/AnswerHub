@@ -52,8 +52,8 @@
                 </div>
 
                 <div class="question-content">
-                    <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
-                    <p>{{ question.content|striptags|truncatewords:30 }}</p>
+                    <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title|truncatechars:30 }}</a></h3>
+                    <p>{{ question.content|striptags|truncatechars:60 }}</p>
 
                     <div class="tags">
                         {% for tag in question.tags.all %}

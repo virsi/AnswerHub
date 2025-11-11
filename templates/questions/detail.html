@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ question.title }} - AnswerHub{% endblock %}
+{% block title %}{{ question.title|truncatechars:15 }} - AnswerHub{% endblock %}
 
 {% block content %}
 <div class="main-layout">
@@ -9,7 +9,6 @@
         <!-- Вопрос -->
         <div class="question-card">
             <div class="vote-buttons">
-                <!-- Для голосования вверх -->
                 <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
                     {% csrf_token %}
                     <button type="submit" class="vote-btn vote-up">↑</button>
@@ -17,7 +16,6 @@
 
                 <span class="vote-count">{{ question.votes }}</span>
 
-                <!-- Для голосования вниз -->
                 <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
                     {% csrf_token %}
                     <button type="submit" class="vote-btn vote-down">↓</button>
@@ -67,7 +65,6 @@
         {% for answer in question.answers.all %}
         <div class="answer-card {% if answer.is_correct %}correct{% endif %}" id="answer-{{ answer.id }}">
             <div class="vote-buttons">
-                <!-- Для голосования вверх -->
                 <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="1">
                     {% csrf_token %}
                     <button type="submit" class="vote-btn vote-up">↑</button>
@@ -75,7 +72,6 @@
 
                 <span class="vote-count">{{ answer.votes }}</span>
 
-                <!-- Для голосования вниз -->
                 <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="-1">
                     {% csrf_token %}
                     <button type="submit" class="vote-btn vote-down">↓</button>
@@ -89,17 +85,21 @@
 
                 <div class="answer-meta">
                     {% if answer.is_correct %}
-                    <div class="correct-answer">
                         <span class="correct-badge">✓ Правильный ответ</span>
-                    </div>
                     {% elif question.author == user %}
-                    <form method="post" action="{% url 'answers:mark_correct' answer.id %}" class="correct-form">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-outline">Отметить как правильный</button>
-                    </form>
+                        <!-- Форма AJAX-отметки правильного ответа -->
+                        <form method="post"
+                              action="{% url 'answers:mark_correct' answer.id %}"
+                              class="mark-correct-form"
+                              data-answer-id="{{ answer.id }}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline mark-correct-btn">
+                                Отметить как правильный
+                            </button>
+                        </form>
                     {% endif %}
 
-                    <!-- Кнопка удаления ответа для автора -->
+                    <!-- Кнопка удаления ответа -->
                     {% if answer.author and user == answer.author %}
                     <div class="answer-actions">
                         <button class="btn-text btn-text-danger delete-answer-btn"
@@ -136,18 +136,18 @@
         </div>
         {% endfor %}
 
-        <!-- Кнопка удаления для автора (после ответов) -->
+        <!-- Кнопка удаления вопроса -->
         {% if question.author and user == question.author %}
         <div class="delete-action">
             <button class="btn-text btn-text-danger" id="deleteQuestionBtn">Удалить вопрос</button>
         </div>
         {% endif %}
 
-        <!-- Форма ответа -->
+        <!-- Форма добавления ответа -->
         {% if user.is_authenticated %}
         <div class="answer-form-card">
             <h3>Ваш ответ</h3>
-            <form class="answer-form" method="post" action="{% url 'answers:create' question.id %}">
+            <form class="answer-form" method="post" action="{% url 'answers:create' question_id=question.id %}">
                 {% csrf_token %}
                 <div class="form-group">
                     <textarea name="content" class="form-textarea" rows="8" placeholder="Введите ваш ответ..." required></textarea>
@@ -169,7 +169,7 @@
         {% endif %}
     </div>
 
-    <!-- Модальное окно подтверждения удаления вопроса -->
+ <!-- Модальное окно подтверждения удаления вопроса -->
     {% if user == question.author %}
     <div id="deleteModal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -221,426 +221,12 @@
     </aside>
 </div>
 
+<!-- Добавляем глобальную переменную для URL удаления ответа -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    function showMessage(message, type = 'success') {
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type}`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="alert-close" aria-label="Закрыть">×</button>
-        `;
-
-        let alertsContainer = document.getElementById('alerts-container');
-
-        if (!alertsContainer) {
-            alertsContainer = document.createElement('div');
-            alertsContainer.id = 'alerts-container';
-            alertsContainer.className = 'alerts-container';
-            document.body.appendChild(alertsContainer);
-        }
-
-        alertsContainer.appendChild(alert);
-
-        setTimeout(() => {
-            alert.style.opacity = '1';
-            alert.style.transform = 'translateY(0)';
-        }, 10);
-
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-20px)';
-                setTimeout(() => alert.remove(), 300);
-            }
-        }, 5000);
-
-        alert.querySelector('.alert-close').addEventListener('click', function() {
-            alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-20px)';
-            setTimeout(() => alert.remove(), 300);
-        });
-    }
-
-    // Удаление вопроса
-    const deleteQuestionBtn = document.getElementById('deleteQuestionBtn');
-    if (deleteQuestionBtn) {
-        const questionModal = document.getElementById('deleteModal');
-        const closeQuestionBtn = document.querySelector('.modal-close');
-        const cancelQuestionBtn = document.querySelector('.modal-cancel');
-
-        deleteQuestionBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            questionModal.style.display = 'block';
-        });
-
-        function closeQuestionModal() {
-            questionModal.style.display = 'none';
-        }
-
-        if (closeQuestionBtn) {
-            closeQuestionBtn.addEventListener('click', closeQuestionModal);
-        }
-        if (cancelQuestionBtn) {
-            cancelQuestionBtn.addEventListener('click', closeQuestionModal);
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === questionModal) {
-                closeQuestionModal();
-            }
-        });
-    }
-
-    // Удаление ответов
-    const deleteAnswerBtns = document.querySelectorAll('.delete-answer-btn');
-    const answerModal = document.getElementById('deleteAnswerModal');
-    const deleteAnswerForm = document.getElementById('deleteAnswerForm');
-    const closeAnswerBtn = document.querySelector('.modal-close-answer');
-    const cancelAnswerBtn = document.querySelector('.modal-cancel-answer');
-
-    if (deleteAnswerBtns.length > 0 && answerModal) {
-        deleteAnswerBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const answerId = this.getAttribute('data-answer-id');
-                const actionUrl = "{% url 'answers:delete' 0 %}".replace('0', answerId);
-                deleteAnswerForm.action = actionUrl;
-                answerModal.style.display = 'block';
-            });
-        });
-
-        function closeAnswerModal() {
-            answerModal.style.display = 'none';
-        }
-
-        if (closeAnswerBtn) {
-            closeAnswerBtn.addEventListener('click', closeAnswerModal);
-        }
-        if (cancelAnswerBtn) {
-            cancelAnswerBtn.addEventListener('click', closeAnswerModal);
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === answerModal) {
-                closeAnswerModal();
-            }
-        });
-    }
-
-    // AJAX голосование за ответы
-    const answerVoteForms = document.querySelectorAll('.answer-card .vote-form');
-
-    answerVoteForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const voteValue = this.getAttribute('data-vote-value');
-
-            formData.append('value', voteValue);
-
-            const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    if (data.success) {
-                        voteCount.textContent = data.votes;
-
-                        // Сбрасываем все voted классы
-                        allVoteBtns.forEach(btn => btn.classList.remove('voted'));
-
-                        // Обновляем состояние кнопок в зависимости от голоса
-                        if (data.voted === 1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-up')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        } else if (data.voted === -1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-down')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        }
-                        // Если data.voted = 0, обе кнопки остаются без класса voted
-
-                        showMessage('Голос учтен!', 'success');
-                    } else {
-                        showMessage(data.error || 'Ошибка при голосовании', 'error');
-                    }
-                } else {
-                    showMessage('Ошибка сервера', 'error');
-                }
-
-            } catch (error) {
-                showMessage('Ошибка сети', 'error');
-            }
-        });
-    });
-
-    // AJAX отметка как правильного
-    const markCorrectForms = document.querySelectorAll('.correct-form');
-
-    markCorrectForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const answerCard = this.closest('.answer-card');
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    answerCard.classList.add('correct');
-
-                    document.querySelectorAll('.correct-form').forEach(f => {
-                        f.style.display = 'none';
-                    });
-
-                    const correctBadge = document.createElement('div');
-                    correctBadge.className = 'correct-answer';
-                    correctBadge.innerHTML = '<span class="correct-badge">✓ Правильный ответ</span>';
-                    this.parentNode.insertBefore(correctBadge, this);
-                    this.remove();
-
-                    showMessage('Ответ отмечен как правильный!', 'success');
-                } else {
-                    showMessage(data.error || 'Ошибка при отметке ответа', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('Ошибка при отметке ответа', 'error');
-            });
-        });
-    });
-
-    // AJAX голосование за вопросы
-    const questionVoteForms = document.querySelectorAll('.question-card .vote-form');
-
-    questionVoteForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const voteValue = this.getAttribute('data-vote-value');
-
-            formData.append('value', voteValue);
-
-            const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    if (data.success) {
-                        voteCount.textContent = data.new_votes || data.votes;
-
-                        // Сбрасываем все voted классы
-                        allVoteBtns.forEach(btn => btn.classList.remove('voted'));
-
-                        // Если голос снят (voted = 0), не добавляем класс voted
-                        // Если пользователь проголосовал, добавляем класс voted соответствующей кнопке
-                        if (data.voted === 1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-up')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        } else if (data.voted === -1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-down')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        }
-                        // Если data.voted = 0, обе кнопки остаются без класса voted
-
-                        showMessage('Голос учтен!', 'success');
-                    } else {
-                        showMessage(data.error || 'Ошибка при голосовании', 'error');
-                    }
-                } else {
-                    showMessage('Ошибка сервера', 'error');
-                }
-
-            } catch (error) {
-                showMessage('Ошибка сети', 'error');
-            }
-        });
-    });
-});
+    // Глобальная переменная для шаблона URL удаления ответа
+    window.answerDeleteUrlTemplate = "{% url 'answers:delete' 0 %}";
 </script>
 
-<style>
-/* Стили для уведомлений */
-.alerts-container {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1000;
-    max-width: 400px;
-    width: 100%;
-}
-
-.alert {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-left: 4px solid #28a745;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: all 0.3s ease;
-}
-
-.alert-success {
-    border-left-color: #28a745;
-    color: #155724;
-    background-color: #d4edda;
-}
-
-.alert-error {
-    border-left-color: #dc3545;
-    color: #721c24;
-    background-color: #f8d7da;
-}
-
-.alert-close {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: 15px;
-    color: inherit;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.alert-close:hover {
-    opacity: 1;
-}
-
-/* Стили для AJAX состояний */
-.vote-btn.voted {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.vote-btn.voted.vote-up {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.vote-btn.voted.vote-down {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.correct-answer {
-    margin-bottom: 10px;
-}
-
-.correct-badge {
-    background-color: #28a745;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.answer-card.correct {
-    border-left: 4px solid #28a745;
-    background-color: #f8fff9;
-}
-
-.form-errors {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.form-errors .error {
-    display: block;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.modal-close, .modal-close-answer {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-</style>
+<!-- Подключаем внешний JavaScript файл -->
+<script src="{% static 'js/question_detail.js' %}"></script>
 {% endblock %}

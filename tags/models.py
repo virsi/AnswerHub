@@ -3,7 +3,7 @@ from django.db.models import Index
 
 class Tag(models.Model):
     name = models.CharField(
-        max_length=50,
+        max_length=15,
         unique=True,
         verbose_name='Название тега',
         db_index=True  # Индекс для поиска тегов

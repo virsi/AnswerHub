@@ -18,7 +18,7 @@ class QuestionManager(dj_models.Manager):
 
 class Question(models.Model):
     title = models.CharField(
-        max_length=200,
+        max_length=50,
         verbose_name='Заголовок вопроса',
         db_index=True  # Индекс для поиска
     )
@@ -92,7 +92,7 @@ class Question(models.Model):
         self.answers.update(is_active=False)
 
     def get_absolute_url(self):
-        return reverse('questions:detail', kwargs={'question_id': self.id})
+        return reverse('questions:detail', kwargs={'pk': self.id})
 
     def answers_count(self):
         return self.answers.filter(is_active=True).count()
