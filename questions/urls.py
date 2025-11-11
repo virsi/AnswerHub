@@ -4,10 +4,14 @@ from . import views
 app_name = 'questions'
 
 urlpatterns = [
-    path('', views.question_list, name='list'),
-    path('hot/', views.hot_questions, name='hot'),
-    path('ask/', views.ask_question, name='ask'),
-    path('<int:question_id>/', views.question_detail, name='detail'),
-    path('<int:question_id>/vote/', views.vote_question, name='vote'),
-    path('<int:question_id>/delete/', views.delete_question, name='delete'),
+    # Классовые представления
+    path('', views.QuestionListView.as_view(), name='list'),
+    path('hot/', views.HotQuestionListView.as_view(), name='hot'),
+    path('ask/', views.QuestionCreateView.as_view(), name='ask'),
+    path('<int:pk>/', views.QuestionDetailView.as_view(), name='detail'),
+    path('<int:pk>/edit/', views.QuestionUpdateView.as_view(), name='edit'),
+    path('<int:pk>/delete/', views.QuestionDeleteView.as_view(), name='delete'),
+
+    # Функциональные представления
+    path('<int:pk>/vote/', views.vote_question, name='vote_question'),
 ]

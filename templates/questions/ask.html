@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Задать вопрос - AnswerHub{% endblock %}
+{% block title %}{% if form.instance.pk %}Редактировать вопрос{% else %}Задать вопрос{% endif %} - AnswerHub{% endblock %}
 
 {% block content %}
 <div class="main-layout">
     <div class="content">
         <div class="ask-form-container">
-            <h1>Задать вопрос</h1>
+            <h1>{% if form.instance.pk %}Редактировать вопрос{% else %}Задать вопрос{% endif %}</h1>
 
             {% if messages %}
                 {% for message in messages %}
@@ -25,8 +25,8 @@
 
                 <!-- Заголовок -->
                 <div class="form-group">
-                    <label for="title" class="form-label">Заголовок</label>
-                    <div class="form-hint">Будьте конкретны и представьте, что вы задаете вопрос другому человеку</div>
+                    <label for="title" class="form-label">{{ form.title.label }}</label>
+                    <div class="form-hint">{{ form.title.help_text }}</div>
                     {{ form.title }}
                     {% if form.title.errors %}
                         <div class="form-error show">
@@ -39,8 +39,8 @@
 
                 <!-- Текст вопроса -->
                 <div class="form-group">
-                    <label for="question-body" class="form-label">Текст вопроса</label>
-                    <div class="form-hint">Введите всю информацию, необходимую для ответа на ваш вопрос</div>
+                    <label for="question-body" class="form-label">{{ form.content.label }}</label>
+                    <div class="form-hint">{{ form.content.help_text }}</div>
                     {{ form.content }}
                     {% if form.content.errors %}
                         <div class="form-error show">
@@ -53,8 +53,8 @@
 
                 <!-- Теги -->
                 <div class="form-group">
-                    <label for="tags" class="form-label">Теги</label>
-                    <div class="form-hint">Добавьте до 3 тегов через запятую, описывающих тему вашего вопроса</div>
+                    <label for="tags" class="form-label">{{ form.tags_input.label }}</label>
+                    <div class="form-hint">{{ form.tags_input.help_text }}</div>
                     {{ form.tags_input }}
                     {% if form.tags_input.errors %}
                         <div class="form-error show">
@@ -70,8 +70,11 @@
 
                 <!-- Кнопки -->
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary btn-large">Опубликовать вопрос</button>
-                    <a href="{% url 'questions:list' %}" class="btn btn-outline">Отмена</a>
+                    <button type="submit" class="btn btn-primary btn-large">
+                        {% if form.instance.pk %}Обновить вопрос{% else %}Опубликовать вопрос{% endif %}
+                    </button>
+                    <a href="{% if form.instance.pk %}{% url 'questions:detail' form.instance.pk %}{% else %}{% url 'questions:list' %}{% endif %}"
+                       class="btn btn-outline">Отмена</a>
                 </div>
             </form>
         </div>
@@ -106,15 +109,19 @@ const tagsInput = document.getElementById('id_tags_input');
 const tagsPreview = document.getElementById('tags-preview');
 
 if (tagsInput && tagsPreview) {
-    tagsInput.addEventListener('input', function(e) {
-        const tags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    function updateTagsPreview() {
+        const tags = tagsInput.value.split(',').map(tag => tag.trim()).filter(tag => tag);
         tagsPreview.innerHTML = tags.map(tag => {
             const span = document.createElement('span');
             span.className = 'tag';
             span.textContent = tag;
             return span.outerHTML;
         }).join('');
-    });
+    }
+
+    tagsInput.addEventListener('input', updateTagsPreview);
+    // Инициализируем предпросмотр при загрузке страницы
+    updateTagsPreview();
 }
 </script>
 {% endblock %}

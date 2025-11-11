@@ -9,14 +9,18 @@
         <!-- Вопрос -->
         <div class="question-card">
             <div class="vote-buttons">
-                <form method="post" action="{% url 'questions:vote' question.id %}">
+                <!-- Для голосования вверх -->
+                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
                     {% csrf_token %}
-                    <button type="submit" name="value" value="1" class="vote-btn vote-up">↑</button>
+                    <button type="submit" class="vote-btn vote-up">↑</button>
                 </form>
+
                 <span class="vote-count">{{ question.votes }}</span>
-                <form method="post" action="{% url 'questions:vote' question.id %}">
+
+                <!-- Для голосования вниз -->
+                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
                     {% csrf_token %}
-                    <button type="submit" name="value" value="-1" class="vote-btn vote-down">↓</button>
+                    <button type="submit" class="vote-btn vote-down">↓</button>
                 </form>
             </div>
 
@@ -217,7 +221,6 @@
     </aside>
 </div>
 
-<!-- Вставьте этот скрипт вместо старого в detail.html -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     function showMessage(message, type = 'success') {
@@ -228,21 +231,33 @@ document.addEventListener('DOMContentLoaded', function() {
             <button type="button" class="alert-close" aria-label="Закрыть">×</button>
         `;
 
-        const container = document.querySelector('.container');
-        const firstChild = container.firstChild;
-        container.insertBefore(alert, firstChild);
+        let alertsContainer = document.getElementById('alerts-container');
+
+        if (!alertsContainer) {
+            alertsContainer = document.createElement('div');
+            alertsContainer.id = 'alerts-container';
+            alertsContainer.className = 'alerts-container';
+            document.body.appendChild(alertsContainer);
+        }
+
+        alertsContainer.appendChild(alert);
+
+        setTimeout(() => {
+            alert.style.opacity = '1';
+            alert.style.transform = 'translateY(0)';
+        }, 10);
 
         setTimeout(() => {
             if (alert.parentNode) {
                 alert.style.opacity = '0';
-                alert.style.transform = 'translateX(100%)';
+                alert.style.transform = 'translateY(-20px)';
                 setTimeout(() => alert.remove(), 300);
             }
         }, 5000);
 
         alert.querySelector('.alert-close').addEventListener('click', function() {
             alert.style.opacity = '0';
-            alert.style.transform = 'translateX(100%)';
+            alert.style.transform = 'translateY(-20px)';
             setTimeout(() => alert.remove(), 300);
         });
     }
@@ -327,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('value', voteValue);
 
             const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const voteBtn = this.querySelector('.vote-btn');
+            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
 
             try {
                 const response = await fetch(url, {
@@ -344,12 +359,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         voteCount.textContent = data.votes;
 
-                        const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
+                        // Сбрасываем все voted классы
                         allVoteBtns.forEach(btn => btn.classList.remove('voted'));
 
-                        if (data.voted) {
-                            voteBtn.classList.add('voted');
+                        // Обновляем состояние кнопок в зависимости от голоса
+                        if (data.voted === 1) {
+                            allVoteBtns.forEach(btn => {
+                                if (btn.classList.contains('vote-up')) {
+                                    btn.classList.add('voted');
+                                }
+                            });
+                        } else if (data.voted === -1) {
+                            allVoteBtns.forEach(btn => {
+                                if (btn.classList.contains('vote-down')) {
+                                    btn.classList.add('voted');
+                                }
+                            });
                         }
+                        // Если data.voted = 0, обе кнопки остаются без класса voted
 
                         showMessage('Голос учтен!', 'success');
                     } else {
@@ -410,10 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // AJAX голосование за вопросы
-    const questionVoteForms = document.querySelectorAll('.question-card form[action*="/vote/"]');
+    const questionVoteForms = document.querySelectorAll('.question-card .vote-form');
 
     questionVoteForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const formData = new FormData(this);
@@ -423,45 +450,128 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('value', voteValue);
 
             const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const voteBtn = this.querySelector('.vote-btn');
+            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
 
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    voteCount.textContent = data.votes;
-
-                    const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
-                    allVoteBtns.forEach(btn => btn.classList.remove('voted'));
-
-                    if (data.voted) {
-                        voteBtn.classList.add('voted');
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                     }
+                });
 
-                    showMessage('Голос учтен!', 'success');
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.success) {
+                        voteCount.textContent = data.new_votes || data.votes;
+
+                        // Сбрасываем все voted классы
+                        allVoteBtns.forEach(btn => btn.classList.remove('voted'));
+
+                        // Если голос снят (voted = 0), не добавляем класс voted
+                        // Если пользователь проголосовал, добавляем класс voted соответствующей кнопке
+                        if (data.voted === 1) {
+                            allVoteBtns.forEach(btn => {
+                                if (btn.classList.contains('vote-up')) {
+                                    btn.classList.add('voted');
+                                }
+                            });
+                        } else if (data.voted === -1) {
+                            allVoteBtns.forEach(btn => {
+                                if (btn.classList.contains('vote-down')) {
+                                    btn.classList.add('voted');
+                                }
+                            });
+                        }
+                        // Если data.voted = 0, обе кнопки остаются без класса voted
+
+                        showMessage('Голос учтен!', 'success');
+                    } else {
+                        showMessage(data.error || 'Ошибка при голосовании', 'error');
+                    }
                 } else {
-                    showMessage(data.error || 'Ошибка при голосовании', 'error');
+                    showMessage('Ошибка сервера', 'error');
                 }
-            })
-            .catch(error => {
-                showMessage('Ошибка при голосовании', 'error');
-            });
+
+            } catch (error) {
+                showMessage('Ошибка сети', 'error');
+            }
         });
     });
 });
 </script>
 
 <style>
+/* Стили для уведомлений */
+.alerts-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+    width: 100%;
+}
+
+.alert {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid #28a745;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all 0.3s ease;
+}
+
+.alert-success {
+    border-left-color: #28a745;
+    color: #155724;
+    background-color: #d4edda;
+}
+
+.alert-error {
+    border-left-color: #dc3545;
+    color: #721c24;
+    background-color: #f8d7da;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 15px;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.alert-close:hover {
+    opacity: 1;
+}
+
 /* Стили для AJAX состояний */
 .vote-btn.voted {
     background-color: #007bff;
     color: white;
+    border-color: #007bff;
+}
+
+.vote-btn.voted.vote-up {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.vote-btn.voted.vote-down {
+    background-color: #dc3545;
+    border-color: #dc3545;
 }
 
 .correct-answer {
@@ -515,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .modal-header {
     display: flex;
-    justify-content: between;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 15px;
 }
