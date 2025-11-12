@@ -191,4 +191,4 @@ def vote_question(request, pk):
             'voted': voted  # 1, -1 или 0 (снят)
         })
 
-    return redirect('questions:detail', pk=question.id)
+    return redirect('questions:list')

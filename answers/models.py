@@ -46,13 +46,13 @@ class Answer(models.Model):
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
         ordering = ['-is_correct', '-votes', 'created_at']
-        indexes = [
-            # Составной индекс, включающий created_at, чтобы покрыть ordering
-            Index(fields=['question', 'is_correct', '-votes', 'created_at']),
-            Index(fields=['author', 'created_at']),
-            Index(fields=['is_active', 'created_at']),
-            Index(fields=['votes']),
-        ]
+    indexes = [
+        Index(fields=['-is_correct', '-votes', 'created_at']),
+        Index(fields=['question', '-is_correct', '-votes', 'created_at']),
+        Index(fields=['author', 'created_at']),
+        Index(fields=['is_active', 'created_at']),
+        Index(fields=['votes']),
+    ]
 
     def delete_answer(self):
         """Мягкое удаление ответа"""

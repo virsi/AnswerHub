@@ -75,6 +75,7 @@ class Question(models.Model):
         verbose_name_plural = 'Вопросы'
         ordering = ['-created_at']
         indexes = [
+            Index(fields=['-created_at']),
             Index(fields=['-created_at', 'is_active']),
             Index(fields=['votes', 'is_active']),
             Index(fields=['author', 'created_at']),
