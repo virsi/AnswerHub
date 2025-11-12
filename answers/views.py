@@ -25,11 +25,15 @@ class AnswerCreateView(LoginRequiredMixin, CreateView):
         return response
 
     def form_invalid(self, form):
-        messages.error(self.request, 'Пожалуйста, исправьте ошибки в форме.')
-        return redirect('questions:detail', pk=self.kwargs['question_id'])
+        question = get_object_or_404(Question, id=self.kwargs['question_id'], is_active=True)
+        return render(self.request, self.template_name, {
+            'question': question,
+            'form': form,
+        })
 
     def get_success_url(self):
         return reverse_lazy('questions:detail', kwargs={'pk': self.kwargs['question_id']})
+
 
 class AnswerVoteView(LoginRequiredMixin, View):
     """Голосование за ответ"""
