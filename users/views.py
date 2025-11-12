@@ -40,6 +40,8 @@ def signup(request):
             login(request, user)
             messages.success(request, f'Аккаунт создан! Добро пожаловать, {user.username}!')
             return redirect('questions:list')
+        else:
+            messages.error(request, f'Ошибка при создании аккаунта: {form.errors}')
     else:
         form = SignUpForm()
 
