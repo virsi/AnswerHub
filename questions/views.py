@@ -52,6 +52,16 @@ class HotQuestionListView(QuestionListView):
         context['title'] = 'Популярные вопросы'
         return context
 
+class MyQuestionListView(LoginRequiredMixin, QuestionListView):
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.filter(author=self.request.user).order_by('-created_at')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Мои вопросы'
+        return context
+
 class QuestionDetailView(DetailView):
     model = Question
     template_name = 'questions/detail.html'
@@ -61,32 +71,32 @@ class QuestionDetailView(DetailView):
         return Question.objects.filter(is_active=True).select_related('author').prefetch_related('tags')
 
 
-def get_context_data(self, **kwargs):
-    context = super().get_context_data(**kwargs)
-    question = self.get_object()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        question = self.get_object()
 
-    # Явно получаем свежие активные ответы, игнорируя кэш
-    from answers.models import Answer
-    answers = Answer.objects.filter(
-        question_id=question.id,  # Используем ID вместо объекта
-        is_active=True
-    ).select_related('author').order_by('-is_correct', '-votes', 'created_at')
+        # Явно получаем свежие активные ответы, игнорируя кэш
+        from answers.models import Answer
+        answers = Answer.objects.filter(
+            question_id=question.id,  # Используем ID вместо объекта
+            is_active=True
+        ).select_related('author').order_by('-is_correct', '-votes', 'created_at')
 
-    paginator = Paginator(answers, 10)
-    page_number = self.request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+        paginator = Paginator(answers, 10)
+        page_number = self.request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
 
-    context['page_obj'] = page_obj
-    context['answers'] = answers  # Добавьте это для совместимости
-    context['popular_tags'] = Tag.objects.all().order_by('-usage_count')[:10]
+        context['page_obj'] = page_obj
+        context['answers'] = answers  # Добавьте это для совместимости
+        context['popular_tags'] = Tag.objects.all().order_by('-usage_count')[:10]
 
-    # Просмотры
-    if self.request.user.is_authenticated:
-        if not question.viewed_by.filter(id=self.request.user.id).exists():
-            question.viewed_by.add(self.request.user)
-            Question.objects.filter(id=question.id).update(views=models.F('views') + 1)
+        # Просмотры
+        if self.request.user.is_authenticated:
+            if not question.viewed_by.filter(id=self.request.user.id).exists():
+                question.viewed_by.add(self.request.user)
+                Question.objects.filter(id=question.id).update(views=models.F('views') + 1)
 
-    return context
+        return context
 
 class QuestionCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = Question

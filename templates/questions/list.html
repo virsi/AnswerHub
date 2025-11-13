@@ -21,6 +21,10 @@
                     <span class="sort-icon">🔥</span>
                     По рейтингу
                 </a>
+                <a href="{% url 'questions:my' %}" class="sort-btn {% if request.resolver_match.url_name == 'my' %}active{% endif %}">
+                    <span class="sort-icon">👤</span>
+                    Мои вопросы
+                </a>
             </div>
         </div>
 
