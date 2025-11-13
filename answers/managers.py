@@ -1,56 +1,82 @@
 from django.db import models
-from django.db.models import Count, Q
-from django.core.exceptions import ValidationError
 
 class AnswerManager(models.Manager):
+    """Менеджер для модели Answer."""
+
+    def get_queryset(self):
+        """Переопределяет QuerySet, чтобы по умолчанию возвращать только активные ответы."""
+        return super().get_queryset().filter(is_active=True)
+
     def active(self):
-        """Только активные ответы"""
-        return self.get_queryset().filter(is_active=True).select_related('author', 'question')
+        """Возвращает только активные ответы (то же, что и основной QuerySet)."""
+        return self.get_queryset()
 
-    def for_question(self, question_id):
-        """Ответы для определенного вопроса"""
-        return self.filter(question_id=question_id, is_active=True).select_related('author').order_by('-is_correct', '-votes', 'created_at')
+    def correct_for_question(self, question):
+        """Возвращает корректный ответ для данного вопроса."""
+        return self.get_queryset().filter(question=question, is_correct=True).first()
 
-    def mark_correct(self, answer, user):
-        """Пометить ответ как правильный"""
-        if user != answer.question.author:
-            raise ValidationError("Вы можете отмечать правильные ответы только для своих вопросов")
+    def mark_correct(self, answer):
+        """
+        Устанавливает ответ как правильный и сбрасывает предыдущий правильный ответ
+        для того же вопроса.
+        """
+        # Сброс флага у всех ответов для данного вопроса.
+        # Используем .all() для доступа ко всем объектам (включая потенциально неактивные),
+        # чтобы гарантировать сброс, если флаг is_correct был установлен неконсистентно.
+        answer.question.answers.all().update(is_correct=False)
 
-        # Снимаем пометку с других ответов на этот вопрос
-        self.filter(question=answer.question, is_correct=True).update(is_correct=False)
-
-        # Ставим пометку текущему ответу
+        # Установка нового правильного ответа
         answer.is_correct = True
-        answer.save(update_fields=['is_correct'])
+        answer.is_active = True # Правильный ответ должен быть активным
+        answer.save(update_fields=['is_correct', 'is_active'])
+
         return answer
 
 
 class AnswerVoteManager(models.Manager):
-    def vote(self, user, answer, value):
-        """Голосование за ответ с проверками"""
-        if user == answer.author:
-            raise ValidationError("Нельзя голосовать за свой ответ")
+    """Менеджер для модели AnswerVote."""
 
-        if value not in [1, -1]:
-            raise ValidationError("Некорректное значение голоса")
+    def get_vote(self, user, answer):
+        """Возвращает существующий голос пользователя за ответ."""
+        return self.filter(user=user, answer=answer).first()
 
-        existing_vote = self.filter(user=user, answer=answer).first()
+    def add_or_update_vote(self, user, answer, value):
+        """
+        Создает, обновляет или удаляет голос пользователя и обновляет
+        общий счетчик голосов (votes) в модели Answer.
+        """
+        existing_vote = self.get_vote(user, answer)
+        answer_votes_change = 0
+        voted = False
+        vote_value = 0
 
         if existing_vote:
             if existing_vote.value == value:
-                # Удаляем голос если тот же самый
+                # Отмена голоса (повторное нажатие)
                 existing_vote.delete()
-                answer.votes -= value
+                answer_votes_change = -value
+                voted = False
             else:
-                # Меняем голос
-                answer.votes -= existing_vote.value
+                # Изменение голоса (Up -> Down или наоборот)
+                answer_votes_change = -existing_vote.value  # Отменяем старый голос
                 existing_vote.value = value
                 existing_vote.save(update_fields=['value'])
-                answer.votes += value
+                answer_votes_change += value  # Добавляем новый голос
+                voted = True
+                vote_value = value
         else:
-            # Новый голос
+            # Создание нового голоса
             self.create(user=user, answer=answer, value=value)
-            answer.votes += value
+            answer_votes_change = value
+            voted = True
+            vote_value = value
 
+        # Обновление общего счетчика голосов в Answer
+        answer.votes += answer_votes_change
         answer.save(update_fields=['votes'])
-        return answer.votes
+
+        return {
+            'votes': answer.votes,
+            'voted': voted,
+            'value': vote_value
+        }

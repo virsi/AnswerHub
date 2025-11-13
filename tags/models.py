@@ -1,12 +1,13 @@
 from django.db import models
 from django.db.models import Index
+from .managers import TagManager
 
 class Tag(models.Model):
     name = models.CharField(
         max_length=15,
         unique=True,
         verbose_name='Название тега',
-        db_index=True  # Индекс для поиска тегов
+        db_index=True
     )
     description = models.TextField(
         blank=True,
@@ -24,8 +25,10 @@ class Tag(models.Model):
     usage_count = models.IntegerField(
         default=0,
         verbose_name='Количество использований',
-        db_index=True  # Индекс для сортировки по популярности
+        db_index=True
     )
+
+    objects = TagManager()
 
     class Meta:
         verbose_name = 'Тег'
@@ -33,7 +36,7 @@ class Tag(models.Model):
         ordering = ['-usage_count', 'name']
         indexes = [
             Index(fields=['-usage_count', 'name']),
-            Index(fields=['name']),  # Дублируем для ясности
+            Index(fields=['name']),
         ]
 
     def __str__(self):

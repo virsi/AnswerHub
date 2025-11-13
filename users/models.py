@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Index
 from django.contrib.auth.models import AbstractUser
+from .managers import UserManager
 
 class User(AbstractUser):
     avatar = models.ImageField(
@@ -12,7 +13,7 @@ class User(AbstractUser):
     reputation = models.IntegerField(
         default=0,
         verbose_name='Репутация',
-        db_index=True  # Индекс для сортировки пользователей
+        db_index=True
     )
     about = models.TextField(
         max_length=500,
@@ -31,8 +32,10 @@ class User(AbstractUser):
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата регистрации',
-        db_index=True  # Индекс для сортировки по дате регистрации
+        db_index=True
     )
+    
+    objects = UserManager()
 
     class Meta:
         verbose_name = 'Пользователь'

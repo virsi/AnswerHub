@@ -2,9 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import LoginForm, SignUpForm, ProfileEditForm
-from .models import User
-from django.db.models import Sum
+from .forms import LoginForm, SignUpForm
 
 def login_view(request):
     if request.user.is_authenticated:

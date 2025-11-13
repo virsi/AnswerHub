@@ -11,7 +11,7 @@ from .forms import AnswerForm
 from questions.models import Question
 
 class AnswerCreateView(LoginRequiredMixin, CreateView):
-    """Создание нового ответа"""
+    """Создание нового ответа. (Логика остается во View, т.к. связана с формой и request)"""
     model = Answer
     form_class = AnswerForm
     template_name = 'questions/detail.html'
@@ -36,13 +36,14 @@ class AnswerCreateView(LoginRequiredMixin, CreateView):
 
 
 class AnswerVoteView(LoginRequiredMixin, View):
-    """Голосование за ответ"""
+    """Голосование за ответ. Логика работы с БД вынесена в AnswerVoteManager."""
 
     def post(self, request, answer_id):
         if not request.user.is_authenticated:
             return JsonResponse({'success': False, 'error': 'Not authenticated'}, status=401)
 
-        answer = get_object_or_404(Answer, id=answer_id, is_active=True)
+        # Используем Answer.all_objects для get_object_or_404, чтобы избежать конфликта с is_active=True в основном AnswerManager
+        answer = get_object_or_404(Answer.all_objects, id=answer_id, is_active=True)
         value = request.POST.get('value')
 
         if not value:
@@ -56,50 +57,26 @@ class AnswerVoteView(LoginRequiredMixin, View):
         if value not in [1, -1]:
             return JsonResponse({'success': False, 'error': 'Value must be 1 or -1'}, status=400)
 
-        existing_vote = AnswerVote.objects.filter(
+        # Вызов логики из менеджера
+        result = AnswerVote.objects.add_or_update_vote(
             user=request.user,
-            answer=answer
-        ).first()
-
-        voted = False
-        vote_value = 0
-
-        if existing_vote:
-            if existing_vote.value == value:
-                existing_vote.delete()
-                answer.votes -= value
-                voted = False
-            else:
-                answer.votes -= existing_vote.value
-                existing_vote.value = value
-                existing_vote.save(update_fields=['value'])
-                answer.votes += value
-                voted = True
-                vote_value = value
-        else:
-            AnswerVote.objects.create(
-                user=request.user,
-                answer=answer,
-                value=value
-            )
-            answer.votes += value
-            voted = True
-            vote_value = value
-
-        answer.save(update_fields=['votes'])
+            answer=answer,
+            value=value
+        )
 
         response_data = {
             'success': True,
-            'votes': answer.votes,
-            'voted': voted,
-            'value': vote_value
+            'votes': result['votes'],
+            'voted': result['voted'],
+            'value': result['value']
         }
 
         return JsonResponse(response_data)
 
 class AnswerMarkCorrectView(LoginRequiredMixin, View):
+    """Отметка ответа как правильного. Логика работы с БД вынесена в AnswerManager."""
     def post(self, request, answer_id):
-        answer = get_object_or_404(Answer, id=answer_id, is_active=True)
+        answer = get_object_or_404(Answer.all_objects, id=answer_id, is_active=True)
         question = answer.question
 
         # Только автор вопроса может отмечать правильный ответ
@@ -108,17 +85,12 @@ class AnswerMarkCorrectView(LoginRequiredMixin, View):
                 return JsonResponse({'success': False, 'error': 'Нет прав на изменение.'}, status=403)
             return redirect('questions:detail', question.id)
 
-        # Сохраняем старый правильный ответ (если есть)
-        prev = Answer.objects.filter(question=question, is_correct=True).first()
+        # Сохраняем старый правильный ответ (если есть), используя AnswerManager.objects
+        prev = Answer.objects.correct_for_question(question)
         prev_id = prev.id if prev else None
 
-        # Сбрасываем флаг у всех ответов
-        Answer.objects.filter(question=question, is_correct=True).update(is_correct=False)
-
-        # Устанавливаем новый правильный
-        answer.is_correct = True
-        answer.is_active = True
-        answer.save(update_fields=['is_correct'])
+        # Вызов логики из менеджера
+        Answer.objects.mark_correct(answer)
 
         # Возвращаем JSON для AJAX
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -132,8 +104,9 @@ class AnswerMarkCorrectView(LoginRequiredMixin, View):
 
 
 class AnswerDeleteView(LoginRequiredMixin, View):
+    """Мягкое удаление ответа. (Логика прав остается, удаление - метод экземпляра)"""
     def post(self, request, answer_id):
-        answer = get_object_or_404(Answer, id=answer_id, is_active=True)
+        answer = get_object_or_404(Answer.all_objects, id=answer_id, is_active=True)
         question = answer.question
 
         if answer.author != request.user and question.author != request.user:
@@ -141,7 +114,7 @@ class AnswerDeleteView(LoginRequiredMixin, View):
                 return JsonResponse({'success': False, 'error': 'Нет прав на удаление.'}, status=403)
             return redirect('questions:detail', question.id)
 
-        # Можно физически удалить или пометить флагом
+        # Используем метод экземпляра модели
         answer.delete_answer()
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

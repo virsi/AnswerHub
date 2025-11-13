@@ -1,36 +1,35 @@
-from django.contrib.auth.models import BaseUserManager
 from django.db import models
-from django.db.models import Count, Sum
+# Импортируем базовый UserManager из django.contrib.auth
+from django.contrib.auth.models import UserManager as AuthUserManager
 
-class UserManager(BaseUserManager):
-    def create_user(self, username, email, password=None, **extra_fields):
-        """Создание обычного пользователя"""
-        if not email:
-            raise ValueError('Email обязателен')
-        if not username:
-            raise ValueError('Username обязателен')
+class UserQuerySet(models.QuerySet):
+    """QuerySet для модели User, содержащий методы для сортировки."""
 
-        email = self.normalize_email(email)
-        user = self.model(username=username, email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
+    def top_by_reputation(self):
+        """Возвращает пользователей, отсортированных по убыванию репутации, затем по дате регистрации."""
+        return self.order_by('-reputation', '-created_at')
 
-    def create_superuser(self, username, email, password=None, **extra_fields):
-        """Создание суперпользователя"""
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+    def recent(self):
+        """Возвращает пользователей, отсортированных по дате регистрации (от новых к старым)."""
+        return self.order_by('-created_at')
 
-        return self.create_user(username, email, password, **extra_fields)
 
-    def with_stats(self):
-        """Пользователи со статистикой"""
-        return self.get_queryset().annotate(
-            questions_count=Count('questions', filter=models.Q(questions__is_active=True)),
-            answers_count=Count('answers', filter=models.Q(answers__is_active=True)),
-            total_votes=Sum('questions__votes') + Sum('answers__votes')
-        )
+# Меняем базовый класс с models.Manager на AuthUserManager
+class UserManager(AuthUserManager):
+    """Менеджер для модели User."""
 
-    def top_by_reputation(self, limit=10):
-        """Топ пользователей по репутации"""
-        return self.get_queryset().order_by('-reputation')[:limit]
+    def get_queryset(self):
+        """Устанавливает UserQuerySet в качестве основы."""
+        return UserQuerySet(self.model, using=self._db)
+
+    # Прокси-методы для удобного доступа через User.objects.<метод>()
+    def top_by_reputation(self):
+        """Возвращает пользователей, отсортированных по репутации."""
+        return self.get_queryset().top_by_reputation()
+
+    def recent(self):
+        """Возвращает самых новых пользователей."""
+        return self.get_queryset().recent()
+
+    # Сюда можно будет добавить методы для атомарного изменения репутации
+    # (например, User.objects.update_reputation(user_id, +10))

@@ -1,39 +1,38 @@
 from django.db import models
-from django.db.models import Count
-from django.utils.text import slugify
+
+class TagQuerySet(models.QuerySet):
+    """
+    Класс QuerySet для модели Tag. Методы здесь можно объединять в цепочки.
+    """
+
+    def list_ordered(self):
+        """
+        Возвращает теги, отсортированные для основного списка:
+        по убыванию usage_count, затем по имени.
+        """
+        return self.order_by('-usage_count', 'name')
+
+    def popular(self, limit=12):
+        """
+        Возвращает самые популярные теги, отсортированные по убыванию usage_count
+        и ограниченные заданным лимитом.
+        """
+        return self.order_by('-usage_count')[:limit]
+
 
 class TagManager(models.Manager):
+    """
+    Менеджер для модели Tag. Использует TagQuerySet.
+    """
+
+    def get_queryset(self):
+        """Устанавливает TagQuerySet в качестве основы."""
+        return TagQuerySet(self.model, using=self._db)
+
+    def list_ordered(self):
+        """Прокси для Question.objects.list_ordered()"""
+        return self.get_queryset().list_ordered()
+
     def popular(self, limit=12):
-        """Популярные теги"""
-        return self.get_queryset().order_by('-usage_count', 'name')[:limit]
-
-    def create_tag(self, name, description='', color='#1864BD'):
-        """Создание тега с автоматическим slug"""
-        slug = slugify(name)
-        tag = self.create(
-            name=name,
-            slug=slug,
-            description=description,
-            color=color
-        )
-        return tag
-
-    def get_or_create_tag(self, name):
-        """Получить или создать тег с увеличением счетчика"""
-        tag, created = self.get_or_create(
-            name=name,
-            defaults={
-                'description': f'Вопросы о {name}',
-                'slug': slugify(name)
-            }
-        )
-        if not created:
-            tag.usage_count += 1
-            tag.save(update_fields=['usage_count'])
-        return tag, created
-
-    def with_questions_count(self):
-        """Теги с количеством вопросов"""
-        return self.get_queryset().annotate(
-            active_questions_count=Count('questions', filter=models.Q(questions__is_active=True))
-        )
+        """Прокси для Question.objects.popular()"""
+        return self.get_queryset().popular(limit)

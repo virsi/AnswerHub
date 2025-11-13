@@ -2,29 +2,17 @@ from django.db import models
 from django.db.models import Index
 from django.urls import reverse
 from users.models import User
-from django.db import models as dj_models
-import datetime
-import random
-
-
-class QuestionManager(dj_models.Manager):
-    def new(self):
-        """Свежие вопросы"""
-        return self.get_queryset().filter(is_active=True).order_by('-created_at')
-
-    def best(self):
-        """Лучшие (популярные) вопросы"""
-        return self.get_queryset().filter(is_active=True).order_by('-votes', '-created_at')
+from .managers import QuestionManager, QuestionVoteManager
 
 class Question(models.Model):
     title = models.CharField(
         max_length=50,
         verbose_name='Заголовок вопроса',
-        db_index=True  # Индекс для поиска
+        db_index=True
     )
     content = models.TextField(
         verbose_name='Текст вопроса',
-        db_index=True  # Индекс для полнотекстового поиска
+        db_index=True
     )
     author = models.ForeignKey(
         User,
@@ -42,7 +30,7 @@ class Question(models.Model):
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания',
-        db_index=True  # Индекс для сортировки
+        db_index=True
     )
     updated_at = models.DateTimeField(
         auto_now=True,
@@ -51,13 +39,12 @@ class Question(models.Model):
     votes = models.IntegerField(
         default=0,
         verbose_name='Голоса',
-        db_index=True  # Индекс для сортировки по популярности
+        db_index=True
     )
     views = models.IntegerField(
         default=0,
         verbose_name='Просмотры'
     )
-    # Список пользователей, которые посмотрели вопрос — нужен для подсчета уникальных просмотров
     viewed_by = models.ManyToManyField(
         User,
         blank=True,
@@ -67,7 +54,7 @@ class Question(models.Model):
     is_active = models.BooleanField(
         default=True,
         verbose_name='Активный',
-        db_index=True  # Индекс для фильтрации
+        db_index=True
     )
 
     class Meta:
@@ -86,7 +73,7 @@ class Question(models.Model):
         return self.title
 
     def delete_question(self):
-        """Мягкое удаление вопроса"""
+        """Мягкое удаление вопроса."""
         self.is_active = False
         self.save(update_fields=['is_active'])
         # Также деактивируем все ответы к этому вопросу
@@ -98,8 +85,9 @@ class Question(models.Model):
     def answers_count(self):
         return self.answers.filter(is_active=True).count()
 
-    # Подключаем менеджер
     objects = QuestionManager()
+    all_objects = models.Manager()
+
 
 class QuestionVote(models.Model):
     user = models.ForeignKey(
@@ -134,3 +122,6 @@ class QuestionVote(models.Model):
 
     def __str__(self):
         return f"{self.user} voted {self.value} for {self.question}"
+
+    # Подключаем новый менеджер
+    objects = QuestionVoteManager()

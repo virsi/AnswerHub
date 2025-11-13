@@ -17,14 +17,13 @@ def paginate(objects_list, request, per_page=10):
     return page
 
 def tag_list(request):
-    tags_list = Tag.objects.all().order_by('-usage_count', 'name')
+    tags_list = Tag.objects.list_ordered()
 
-    # Добавляем пагинацию для списка тегов
-    page = paginate(tags_list, request, per_page=12)  # 20 тегов на страницу
+    page = paginate(tags_list, request, per_page=12)
 
     return render(request, 'tags/list.html', {
-        'tags': page.object_list,  # для обратной совместимости
-        'page': page  # для пагинации
+        'tags': page.object_list,
+        'page': page
     })
 
 def tag_detail(request, tag_name):
@@ -37,13 +36,13 @@ def tag_detail(request, tag_name):
 
     page = paginate(questions, request, per_page=10)
 
-    # Получаем популярные теги для сайдбара
-    popular_tags = Tag.objects.all().order_by('-usage_count')[:12]
+    # Получаем популярные теги с помощью Tag.objects.popular()
+    popular_tags = Tag.objects.popular(limit=12)
 
     return render(request, 'tags/detail.html', {
         'tag': tag,
         'page': page,
-        'questions': page.object_list,  # для цикла в шаблоне
-        'questions_count': questions.count(),  # общее количество вопросов
-        'popular_tags': popular_tags,  # для сайдбара
+        'questions': page.object_list,
+        'questions_count': questions.count(),
+        'popular_tags': popular_tags,
     })

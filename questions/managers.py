@@ -1,103 +1,106 @@
 from django.db import models
-from django.db.models import Count, Q, F
-from django.core.exceptions import ValidationError
-from django.utils import timezone
+from django.db.models import F
 
-
-class QuestionManager(models.Manager):
+# 1. Пользовательский QuerySet
+class QuestionQuerySet(models.QuerySet):
+    """
+    Класс QuerySet для Question. Методы здесь можно объединять в цепочки.
+    """
     def new(self):
-        """Свежие вопросы"""
-        return self.get_queryset().filter(is_active=True).select_related('author').prefetch_related('tags').order_by('-created_at')
+        """Свежие вопросы (сортировка по дате создания)."""
+        return self.order_by('-created_at')
 
     def best(self):
-        """Лучшие (популярные) вопросы"""
-        return self.get_queryset().filter(is_active=True).select_related('author').prefetch_related('tags').order_by('-votes', '-created_at')
+        """Лучшие (популярные) вопросы (сортировка по голосам)."""
+        return self.order_by('-votes', '-created_at')
 
-    def with_answers_count(self):
-        """Вопросы с количеством ответов"""
-        return self.get_queryset().annotate(
-            answers_count=Count('answers', filter=Q(answers__is_active=True))
-        )
+    def by_author(self, user):
+        """Вопросы, созданные конкретным пользователем."""
+        return self.filter(author=user).order_by('-created_at')
 
-    def for_tag(self, tag_name):
-        """Вопросы для определенного тега"""
-        return self.filter(tags__name=tag_name, is_active=True).select_related('author').prefetch_related('tags')
+    def with_prefetches(self):
+        """Предварительная загрузка связанных объектов для оптимизации."""
+        return self.select_related('author').prefetch_related('tags')
 
-    def increment_views(self, question_id, user=None, ip_address=None, user_agent=None):
-        """Увеличить счетчик просмотров с проверкой уникальности"""
-        from .models import QuestionView  # Локальный импорт для избежания цикла
 
-        question = self.get(id=question_id)
+# 2. Пользовательский Manager
+class QuestionManager(models.Manager):
+    """
+    Менеджер для модели Question.
+    """
+    def get_queryset(self):
+        """Переопределяет QuerySet, чтобы использовать QuestionQuerySet и фильтровать по is_active=True."""
+        return QuestionQuerySet(self.model, using=self._db).filter(is_active=True)
 
-        # Проверяем, был ли уже просмотр от этого пользователя/IP
-        view_filters = models.Q(question_id=question_id)
+    # --- ПРОКСИ-МЕТОДЫ ---
+    def new(self):
+        return self.get_queryset().new()
 
-        if user and user.is_authenticated:
-            view_filters &= models.Q(user=user)
-        elif ip_address:
-            view_filters &= models.Q(ip_address=ip_address)
-        else:
-            # Если нет пользователя и IP, считаем уникальным просмотром
-            question.views += 1
-            question.save(update_fields=['views'])
-            return question.views
+    def best(self):
+        return self.get_queryset().best()
 
-        # Проверяем существующий просмотр за последние 24 часа
-        recent_view = QuestionView.objects.filter(
-            view_filters,
-            created_at__gte=timezone.now() - timezone.timedelta(hours=24)
-        ).first()
+    def by_author(self, user):
+        return self.get_queryset().by_author(user)
 
-        if not recent_view:
-            # Создаем запись о просмотре
-            QuestionView.objects.create(
-                user=user if user and user.is_authenticated else None,
-                question=question,
-                ip_address=ip_address,
-                user_agent=user_agent
-            )
+    def with_prefetches(self):
+        """Прокси для QuestionDetailView"""
+        return self.get_queryset().with_prefetches()
+    # -----------------------
 
-            # Увеличиваем счетчик просмотров
-            question.views += 1
-            question.save(update_fields=['views'])
-
-        return question.views
+    def record_view(self, question, user):
+        """
+        Записывает просмотр вопроса, увеличивая счетчик views только
+        для уникальных пользователей.
+        """
+        if user.is_authenticated:
+            if not question.viewed_by.filter(id=user.id).exists():
+                question.viewed_by.add(user)
+                self.filter(id=question.id).update(views=F('views') + 1)
+                return True
+        return False
 
 
 class QuestionVoteManager(models.Manager):
-    def vote(self, user, question, value):
-        """Голосование за вопрос с проверками"""
-        print(f"DEBUG: Voting - user: {user}, question: {question.id}, value: {value}")  # Отладка
+    """Менеджер для модели QuestionVote, включающий логику голосования."""
 
-        if user == question.author:
-            raise ValidationError("Нельзя голосовать за свой вопрос")
+    def get_vote(self, user, question):
+        """Возвращает существующий голос пользователя за вопрос."""
+        return self.filter(user=user, question=question).first()
 
-        if value not in [1, -1]:
-            raise ValidationError("Некорректное значение голоса")
-
-        existing_vote = self.filter(user=user, question=question).first()
+    def add_or_update_vote(self, user, question, value):
+        """
+        Создает, обновляет или удаляет голос пользователя и атомарно
+        обновляет общий счетчик голосов (votes) в модели Question.
+        """
+        existing_vote = self.get_vote(user, question)
+        vote_delta = 0
+        voted = None
 
         if existing_vote:
-            print(f"DEBUG: Existing vote found - value: {existing_vote.value}")  # Отладка
             if existing_vote.value == value:
-                # Удаляем голос если тот же самый
                 existing_vote.delete()
-                question.votes -= value
-                print(f"DEBUG: Vote removed, new votes: {question.votes}")  # Отладка
+                vote_delta = -value
+                voted = 0
             else:
-                # Меняем голос
-                question.votes -= existing_vote.value
+                vote_delta = value - existing_vote.value
                 existing_vote.value = value
                 existing_vote.save(update_fields=['value'])
-                question.votes += value
-                print(f"DEBUG: Vote changed, new votes: {question.votes}")  # Отладка
+                voted = value
         else:
-            # Новый голос
-            print(f"DEBUG: Creating new vote")  # Отладка
             self.create(user=user, question=question, value=value)
-            question.votes += value
-            print(f"DEBUG: New vote created, new votes: {question.votes}")  # Отладка
+            vote_delta = value
+            voted = value
 
-        question.save(update_fields=['votes'])
-        print(f"DEBUG: Final votes count: {question.votes}")  # Отладка
-        return question.votes
+        # Атомарное обновление счетчика votes в Question
+        if vote_delta != 0:
+            # ИСПРАВЛЕНИЕ: Используем question.__class__.all_objects для доступа к менеджеру
+            # через класс модели, что корректно даже без прямого импорта Question.
+            question.__class__.all_objects.filter(id=question.id).update(votes=F('votes') + vote_delta)
+
+        # Получаем актуальное количество голосов из БД
+        question.refresh_from_db(fields=['votes'])
+
+        return {
+            'new_votes': question.votes,
+            'voted': voted,
+        }

@@ -2,7 +2,7 @@ from django.db import models
 from django.db.models import Index
 from users.models import User
 from questions.models import Question
-
+from .managers import AnswerManager, AnswerVoteManager # Импортируем менеджеры
 
 class Answer(models.Model):
     content = models.TextField(
@@ -42,6 +42,10 @@ class Answer(models.Model):
         verbose_name='Активный'
     )
 
+    # Назначаем пользовательские менеджеры
+    objects = AnswerManager()
+    all_objects = models.Manager() # Добавляем стандартный менеджер для доступа ко всем объектам (включая неактивные)
+
     class Meta:
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
@@ -55,7 +59,7 @@ class Answer(models.Model):
     ]
 
     def delete_answer(self):
-        """Мягкое удаление ответа"""
+        """Мягкое удаление ответа (оставлено в модели, так как это операция над экземпляром)."""
         self.is_active = False
         self.is_correct = False
         self.save(update_fields=['is_active', 'is_correct'])
@@ -83,6 +87,9 @@ class AnswerVote(models.Model):
         auto_now_add=True,
         verbose_name='Дата голоса'
     )
+
+    # Назначаем пользовательский менеджер
+    objects = AnswerVoteManager()
 
     class Meta:
         verbose_name = 'Голос за ответ'

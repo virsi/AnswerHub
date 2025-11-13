@@ -2,15 +2,12 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse_lazy
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.db import models
-
 from .models import Question, QuestionVote
 from .forms import QuestionForm
 from tags.models import Tag
@@ -21,12 +18,10 @@ class QuestionListView(ListView):
     template_name = 'questions/list.html'
     context_object_name = 'page'
     paginate_by = 10
-    ordering = ['-created_at']
 
     def get_queryset(self):
-        queryset = Question.objects.filter(is_active=True).select_related('author').prefetch_related('tags')
+        queryset = Question.objects.new().with_prefetches()
 
-        # Поиск по вопросам
         search_query = self.request.GET.get('q')
         if search_query:
             queryset = queryset.filter(
@@ -44,8 +39,16 @@ class QuestionListView(ListView):
 
 class HotQuestionListView(QuestionListView):
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.order_by('-votes', '-created_at')
+        queryset = Question.objects.best().with_prefetches()
+
+        search_query = self.request.GET.get('q')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(content__icontains=search_query)
+            )
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -54,8 +57,8 @@ class HotQuestionListView(QuestionListView):
 
 class MyQuestionListView(LoginRequiredMixin, QuestionListView):
     def get_queryset(self):
-        queryset = super().get_queryset()
-        return queryset.filter(author=self.request.user).order_by('-created_at')
+        queryset = Question.objects.by_author(self.request.user).with_prefetches()
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -68,18 +71,15 @@ class QuestionDetailView(DetailView):
     context_object_name = 'question'
 
     def get_queryset(self):
-        return Question.objects.filter(is_active=True).select_related('author').prefetch_related('tags')
+        return Question.objects.with_prefetches()
 
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         question = self.get_object()
 
-        # Явно получаем свежие активные ответы, игнорируя кэш
-        from answers.models import Answer
         answers = Answer.objects.filter(
-            question_id=question.id,  # Используем ID вместо объекта
-            is_active=True
+            question_id=question.id,
         ).select_related('author').order_by('-is_correct', '-votes', 'created_at')
 
         paginator = Paginator(answers, 10)
@@ -87,14 +87,11 @@ class QuestionDetailView(DetailView):
         page_obj = paginator.get_page(page_number)
 
         context['page_obj'] = page_obj
-        context['answers'] = answers  # Добавьте это для совместимости
+        context['answers'] = answers
         context['popular_tags'] = Tag.objects.all().order_by('-usage_count')[:10]
 
-        # Просмотры
-        if self.request.user.is_authenticated:
-            if not question.viewed_by.filter(id=self.request.user.id).exists():
-                question.viewed_by.add(self.request.user)
-                Question.objects.filter(id=question.id).update(views=models.F('views') + 1)
+        # Логика подсчета просмотров вынесена в менеджер
+        Question.objects.record_view(question, self.request.user)
 
         return context
 
@@ -110,7 +107,6 @@ class QuestionCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
-        # Автор устанавливается автоматически в форме
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -130,7 +126,6 @@ class QuestionUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
 
-        # Предзаполняем поле тегов
         question = self.get_object()
         tags = question.tags.all()
         if tags:
@@ -153,65 +148,34 @@ class QuestionDeleteView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessage
 
     def delete(self, request, *args, **kwargs):
         question = self.get_object()
-        question.delete_question()  # Мягкое удаление
+        question.delete_question()
         return super().delete(request, *args, **kwargs)
 
-# Функциональные представления для голосования (можно оставить как есть или переделать в API views)
 @require_http_methods(["POST"])
 @login_required
 def vote_question(request, pk):
-    question = get_object_or_404(Question, id=pk, is_active=True)
+    question = get_object_or_404(Question.objects, id=pk)
     value = request.POST.get('value')
 
     if value not in ['1', '-1']:
         return JsonResponse({'success': False, 'error': 'Некорректное значение голоса'}, status=400)
 
-    value = int(value)
-    voted = None     # 1, -1, или 0 (если голос снят)
-    vote_delta = 0   # Насколько изменится счетчик question.votes
+    try:
+        value = int(value)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Значение должно быть целым числом'}, status=400)
 
-    existing_vote = QuestionVote.objects.filter(
+    result = QuestionVote.objects.add_or_update_vote(
         user=request.user,
-        question=question
-    ).first()
+        question=question,
+        value=value
+    )
 
-    if existing_vote:
-        if existing_vote.value == value:
-            # Снять голос (голос отменяется)
-            existing_vote.delete()
-            vote_delta = -value
-            voted = 0
-        else:
-            # Изменить голос (например, с -1 на 1)
-            # Изменение = (Новое значение) - (Старое значение)
-            vote_delta = value - existing_vote.value
-            existing_vote.value = value
-            existing_vote.save()
-            voted = value
-    else:
-        # Новый голос
-        QuestionVote.objects.create(
-            user=request.user,
-            question=question,
-            value=value
-        )
-        vote_delta = value
-        voted = value
-
-    # 2. Атомарное обновление счетчика votes в БД
-    if vote_delta != 0:
-        Question.objects.filter(id=pk).update(votes=models.F('votes') + vote_delta)
-
-    # 3. Получить обновленное количество голосов из БД
-    # Это важно, чтобы вернуть актуальное значение.
-    question.refresh_from_db(fields=['votes'])
-
-    # 4. Возвращаем JSON
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'success': True,
-            'new_votes': question.votes, # Теперь это гарантированно актуальное значение
-            'voted': voted
+            'new_votes': result['new_votes'],
+            'voted': result['voted']
         })
 
-    return redirect('questions:list') # Для не-AJAX запросов
+    return redirect('questions:list')
