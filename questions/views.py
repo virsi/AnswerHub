@@ -163,42 +163,55 @@ def vote_question(request, pk):
     question = get_object_or_404(Question, id=pk, is_active=True)
     value = request.POST.get('value')
 
-    voted = None
-    if value in ['1', '-1']:
-        value = int(value)
-        existing_vote = QuestionVote.objects.filter(
-            user=request.user,
-            question=question
-        ).first()
+    if value not in ['1', '-1']:
+        return JsonResponse({'success': False, 'error': 'Некорректное значение голоса'}, status=400)
 
-        if existing_vote:
-            if existing_vote.value == value:
-                existing_vote.delete()
-                question.votes -= value
-                voted = 0  # Голос снят
-            else:
-                question.votes -= existing_vote.value
-                existing_vote.value = value
-                existing_vote.save()
-                question.votes += value
-                voted = value  # Голос изменен
+    value = int(value)
+    voted = None     # 1, -1, или 0 (если голос снят)
+    vote_delta = 0   # Насколько изменится счетчик question.votes
+
+    existing_vote = QuestionVote.objects.filter(
+        user=request.user,
+        question=question
+    ).first()
+
+    if existing_vote:
+        if existing_vote.value == value:
+            # Снять голос (голос отменяется)
+            existing_vote.delete()
+            vote_delta = -value
+            voted = 0
         else:
-            QuestionVote.objects.create(
-                user=request.user,
-                question=question,
-                value=value
-            )
-            question.votes += value
-            voted = value  # Новый голос
+            # Изменить голос (например, с -1 на 1)
+            # Изменение = (Новое значение) - (Старое значение)
+            vote_delta = value - existing_vote.value
+            existing_vote.value = value
+            existing_vote.save()
+            voted = value
+    else:
+        # Новый голос
+        QuestionVote.objects.create(
+            user=request.user,
+            question=question,
+            value=value
+        )
+        vote_delta = value
+        voted = value
 
-        question.save(update_fields=['votes'])
+    # 2. Атомарное обновление счетчика votes в БД
+    if vote_delta != 0:
+        Question.objects.filter(id=pk).update(votes=models.F('votes') + vote_delta)
 
-    # Для AJAX запросов возвращаем JSON
+    # 3. Получить обновленное количество голосов из БД
+    # Это важно, чтобы вернуть актуальное значение.
+    question.refresh_from_db(fields=['votes'])
+
+    # 4. Возвращаем JSON
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         return JsonResponse({
             'success': True,
-            'new_votes': question.votes,
-            'voted': voted  # 1, -1 или 0 (снят)
+            'new_votes': question.votes, # Теперь это гарантированно актуальное значение
+            'voted': voted
         })
 
-    return redirect('questions:list')
+    return redirect('questions:list') # Для не-AJAX запросов

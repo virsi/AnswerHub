@@ -168,49 +168,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // AJAX отметка как правильного
-    const markCorrectForms = document.querySelectorAll('.correct-form');
-
-    markCorrectForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const answerCard = this.closest('.answer-card');
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    answerCard.classList.add('correct');
-
-                    document.querySelectorAll('.correct-form').forEach(f => {
-                        f.style.display = 'none';
-                    });
-
-                    const correctBadge = document.createElement('div');
-                    correctBadge.className = 'correct-answer';
-                    correctBadge.innerHTML = '<span class="correct-badge">✓ Правильный ответ</span>';
-                    this.parentNode.insertBefore(correctBadge, this);
-                    this.remove();
-
-                    showMessage('Ответ отмечен как правильный!', 'success');
-                } else {
-                    showMessage(data.error || 'Ошибка при отметке ответа', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('Ошибка при отметке ответа', 'error');
-            });
-        });
-    });
 
     // AJAX голосование за вопросы
     const questionVoteForms = document.querySelectorAll('.question-card .vote-form');
@@ -242,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = await response.json();
 
                     if (data.success) {
-                        voteCount.textContent = data.new_votes || data.votes;
+                        voteCount.textContent = (data.new_votes ?? data.votes ?? 0);
 
                         // Сбрасываем все voted классы
                         allVoteBtns.forEach(btn => btn.classList.remove('voted'));
