@@ -1,646 +1,117 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}{{ question.title }} - AnswerHub{% endblock %}
+{% block title %}Вопросы с тегом [{{ tag.name }}] - AnswerHub{% endblock %}
 
 {% block content %}
 <div class="main-layout">
     <div class="content">
-        <!-- Вопрос -->
-        <div class="question-card">
-            <div class="vote-buttons">
-                <!-- Для голосования вверх -->
-                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
-                    {% csrf_token %}
-                    <button type="submit" class="vote-btn vote-up">↑</button>
-                </form>
-
-                <span class="vote-count">{{ question.votes|default:0 }}</span>
-
-                <!-- Для голосования вниз -->
-                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
-                    {% csrf_token %}
-                    <button type="submit" class="vote-btn vote-down">↓</button>
-                </form>
-            </div>
-
-            <div class="question-content">
-                <h1>{{ question.title }}</h1>
-                <div class="question-body">
-                    {{ question.content|linebreaks }}
-                </div>
-
-                <div class="tags">
-                    {% for tag in question.tags.all %}
-                    <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
-                    {% empty %}
-                    <span class="tag">без тега</span>
-                    {% endfor %}
-                </div>
-
-                <div class="meta">
-                    <span>спросил {{ question.created_at|timesince }} назад</span>
-                    <span>просмотров: {{ question.views }}</span>
-                    <div class="author-info">
-                        {% if question.author %}
-                        <div class="user-avatar-small">
-                            <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
-                                 alt="Аватар {{ question.author.username }}" class="avatar-img">
-                        </div>
-                        <span>{{ question.author.username }}</span>
-                        {% else %}
-                        <div class="user-avatar-small">
-                            <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
-                        </div>
-                        <span>Пользователь удален</span>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
+        <div class="tag-header-top">
+            <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
         </div>
 
-        <!-- Ответы -->
-        <div class="answers-header">
-            <h2>{{ question.answers.count }} ответов</h2>
+        <!-- Заголовок тега -->
+        <div class="tag-header">
+            <span class="tag-badge large">{{ tag.name }}</span>
+            <h1>Вопросы с тегом [{{ tag.name }}]</h1>
+            {% if tag.description %}
+            <p class="tag-description">{{ tag.description }}</p>
+            {% endif %}
         </div>
 
-        {% for answer in question.answers.all %}
-        <div class="answer-card {% if answer.is_correct %}correct{% endif %}" id="answer-{{ answer.id }}">
-            <div class="vote-buttons">
-                <!-- Для голосования вверх -->
-                <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="1">
-                    {% csrf_token %}
-                    <button type="submit" class="vote-btn vote-up">↑</button>
-                </form>
-
-                <span class="vote-count">{{ answer.votes|default:0 }}</span>
-
-                <!-- Для голосования вниз -->
-                <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="-1">
-                    {% csrf_token %}
-                    <button type="submit" class="vote-btn vote-down">↓</button>
-                </form>
-            </div>
-
-            <div class="answer-content">
-                <div class="answer-body">
-                    {{ answer.content|linebreaks }}
-                </div>
-
-                <div class="answer-meta">
-                    {% if answer.is_correct %}
-                    <div class="correct-answer">
-                        <span class="correct-badge">✓ Правильный ответ</span>
-                    </div>
-                    {% elif question.author == user %}
-                    <form method="post" action="{% url 'answers:mark_correct' answer.id %}" class="correct-form">
+        <!-- Список вопросов -->
+        <div class="questions-list">
+            {% for question in questions %}
+            <div class="question-card">
+                <div class="vote-buttons">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-outline">Отметить как правильный</button>
+                        <button type="submit" class="vote-btn vote-up">↑</button>
                     </form>
-                    {% endif %}
 
-                    <!-- Кнопка удаления ответа для автора -->
-                    {% if answer.author and user == answer.author %}
-                    <div class="answer-actions">
-                        <button class="btn-text btn-text-danger delete-answer-btn"
-                                data-answer-id="{{ answer.id }}">
-                            Удалить
-                        </button>
-                    </div>
-                    {% endif %}
+                    <span class="vote-count">{{ question.votes }}</span>
 
-                    <div class="meta">
-                        <span>ответил {{ answer.created_at|timesince }} назад</span>
-                        <div class="author-info">
-                            {% if answer.author %}
-                            <div class="user-avatar-small">
-                                <img src="{% if answer.author.avatar %}{{ answer.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
-                                     alt="Аватар {{ answer.author.username }}" class="avatar-img">
-                            </div>
-                            <span>{{ answer.author.username }}</span>
-                            {% else %}
-                            <div class="user-avatar-small">
-                                <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
-                            </div>
-                            <span>Пользователь удален</span>
-                            {% endif %}
-                        </div>
-                    </div>
+                    <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
+                        {% csrf_token %}
+                        <button type="submit" class="vote-btn vote-down">↓</button>
+                    </form>
+                    {% else %}
+                    <button type="button" class="vote-btn vote-down disabled">↓</button>
+                    {% endif %}
                 </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="no-answers">
-            <h3>Пока нет ответов</h3>
-            <p>Будьте первым, кто ответит на этот вопрос!</p>
-        </div>
-        {% endfor %}
 
-        <!-- Кнопка удаления для автора (после ответов) -->
-        {% if question.author and user == question.author %}
-        <div class="delete-action">
-            <button class="btn-text btn-text-danger" id="deleteQuestionBtn">Удалить вопрос</button>
-        </div>
-        {% endif %}
+                <div class="question-content">
+                    <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
+                    <p>{{ question.content|striptags|truncatewords:30 }}</p>
 
-        <!-- Форма ответа -->
-        {% if user.is_authenticated %}
-        <div class="answer-form-card">
-            <h3>Ваш ответ</h3>
-            <form class="answer-form" method="post" action="{% url 'answers:create' question.id %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <textarea name="content" class="form-textarea" rows="8" placeholder="Введите ваш ответ..." required></textarea>
-                    {% if form.errors.content %}
-                    <div class="form-errors">
-                        {% for error in form.errors.content %}
-                        <span class="error">{{ error }}</span>
+                    <div class="tags">
+                        {% for question_tag in question.tags.all %}
+                        <a href="{% url 'tags:detail' question_tag.name %}" class="tag {% if question_tag.name == tag.name %}active{% endif %}">
+                            {{ question_tag.name }}
+                        </a>
                         {% endfor %}
                     </div>
-                    {% endif %}
+
+                    <div class="meta">
+                        <span>спросил {{ question.created_at|timesince }} назад</span>
+                        <span>{{ question.answer_set.count }} ответов</span>
+                        <span>{{ question.views }} просмотров</span>
+                        <div class="author-info">
+                            <div class="user-avatar-small">
+                                <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                     alt="Аватар {{ question.author.username }}" class="avatar-img">
+                            </div>
+                            <span>{{ question.author.username }}</span>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Отправить ответ</button>
-            </form>
+            </div>
+            {% empty %}
+            <div class="no-questions">
+                <h3>Пока нет вопросов с этим тегом</h3>
+                <p>Будьте первым, кто задаст вопрос с тегом "{{ tag.name }}"!</p>
+                <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
+            </div>
+            {% endfor %}
         </div>
-        {% else %}
-        <div class="auth-prompt">
-            <p>Чтобы ответить на вопрос, <a href="{% url 'users:login' %}">войдите</a> или <a href="{% url 'users:signup' %}">зарегистрируйтесь</a>.</p>
-        </div>
+
+        <!-- Пагинация -->
+        {% if page %}
+            {% include 'includes/pagination.html' with page=page %}
         {% endif %}
     </div>
 
-    <!-- Модальное окно подтверждения удаления вопроса -->
-    {% if user == question.author %}
-    <div id="deleteModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Удаление вопроса</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Вы уверены, что хотите удалить вопрос "<strong>{{ question.title }}</strong>"?</p>
-                <p>Это действие нельзя отменить. Все ответы на этот вопрос также будут скрыты.</p>
-            </div>
-            <div class="modal-actions">
-                <form method="post" action="{% url 'questions:delete' question.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Удалить вопрос</button>
-                </form>
-                <button class="btn btn-outline modal-cancel">Отмена</button>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <!-- Модальное окно подтверждения удаления ответа -->
-    {% if user.is_authenticated %}
-    <div id="deleteAnswerModal" class="modal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Удаление ответа</h3>
-                <button class="modal-close-answer">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Вы уверены, что хотите удалить этот ответ?</p>
-                <p>Это действие нельзя отменить.</p>
-            </div>
-            <div class="modal-actions">
-                <form id="deleteAnswerForm" method="post" action="">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Удалить ответ</button>
-                </form>
-                <button class="btn btn-outline modal-cancel-answer">Отмена</button>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
     <aside class="sidebar">
-        {% include 'includes/sidebar_popular_tags.html' %}
-        {% include 'includes/sidebar_top_users.html' %}
+        <div class="sidebar-card">
+            <h3>Статистика тега</h3>
+            <div class="tag-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Всего вопросов:</span>
+                    <span class="stat-value">{{ questions_count }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Использований:</span>
+                    <span class="stat-value">{{ tag.usage_count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>Похожие теги</h3>
+            <div class="tags">
+                {% for similar_tag in popular_tags %}
+                    {% if similar_tag.name != tag.name %}
+                    <a href="{% url 'tags:detail' similar_tag.name %}" class="tag">{{ similar_tag.name }}</a>
+                    {% endif %}
+                {% empty %}
+                <span class="no-tags">Нет похожих тегов</span>
+                {% endfor %}
+            </div>
+        </div>
     </aside>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    function showMessage(message, type = 'success') {
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type}`;
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="alert-close" aria-label="Закрыть">×</button>
-        `;
-
-        let alertsContainer = document.getElementById('alerts-container');
-
-        if (!alertsContainer) {
-            alertsContainer = document.createElement('div');
-            alertsContainer.id = 'alerts-container';
-            alertsContainer.className = 'alerts-container';
-            document.body.appendChild(alertsContainer);
-        }
-
-        alertsContainer.appendChild(alert);
-
-        setTimeout(() => {
-            alert.style.opacity = '1';
-            alert.style.transform = 'translateY(0)';
-        }, 10);
-
-        setTimeout(() => {
-            if (alert.parentNode) {
-                alert.style.opacity = '0';
-                alert.style.transform = 'translateY(-20px)';
-                setTimeout(() => alert.remove(), 300);
-            }
-        }, 5000);
-
-        alert.querySelector('.alert-close').addEventListener('click', function() {
-            alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-20px)';
-            setTimeout(() => alert.remove(), 300);
-        });
-    }
-
-    // Удаление вопроса
-    const deleteQuestionBtn = document.getElementById('deleteQuestionBtn');
-    if (deleteQuestionBtn) {
-        const questionModal = document.getElementById('deleteModal');
-        const closeQuestionBtn = document.querySelector('.modal-close');
-        const cancelQuestionBtn = document.querySelector('.modal-cancel');
-
-        deleteQuestionBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            questionModal.style.display = 'block';
-        });
-
-        function closeQuestionModal() {
-            questionModal.style.display = 'none';
-        }
-
-        if (closeQuestionBtn) {
-            closeQuestionBtn.addEventListener('click', closeQuestionModal);
-        }
-        if (cancelQuestionBtn) {
-            cancelQuestionBtn.addEventListener('click', closeQuestionModal);
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === questionModal) {
-                closeQuestionModal();
-            }
-        });
-    }
-
-    // Удаление ответов
-    const deleteAnswerBtns = document.querySelectorAll('.delete-answer-btn');
-    const answerModal = document.getElementById('deleteAnswerModal');
-    const deleteAnswerForm = document.getElementById('deleteAnswerForm');
-    const closeAnswerBtn = document.querySelector('.modal-close-answer');
-    const cancelAnswerBtn = document.querySelector('.modal-cancel-answer');
-
-    if (deleteAnswerBtns.length > 0 && answerModal) {
-        deleteAnswerBtns.forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const answerId = this.getAttribute('data-answer-id');
-                const actionUrl = "{% url 'answers:delete' 0 %}".replace('0', answerId);
-                deleteAnswerForm.action = actionUrl;
-                answerModal.style.display = 'block';
-            });
-        });
-
-        function closeAnswerModal() {
-            answerModal.style.display = 'none';
-        }
-
-        if (closeAnswerBtn) {
-            closeAnswerBtn.addEventListener('click', closeAnswerModal);
-        }
-        if (cancelAnswerBtn) {
-            cancelAnswerBtn.addEventListener('click', closeAnswerModal);
-        }
-
-        window.addEventListener('click', function(e) {
-            if (e.target === answerModal) {
-                closeAnswerModal();
-            }
-        });
-    }
-
-    // AJAX голосование за ответы
-    const answerVoteForms = document.querySelectorAll('.answer-card .vote-form');
-
-    answerVoteForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const voteValue = this.getAttribute('data-vote-value');
-
-            formData.append('value', voteValue);
-
-            const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    if (data.success) {
-                        voteCount.textContent = data.votes;
-
-                        // Сбрасываем все voted классы
-                        allVoteBtns.forEach(btn => btn.classList.remove('voted'));
-
-                        // Обновляем состояние кнопок в зависимости от голоса
-                        if (data.voted === 1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-up')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        } else if (data.voted === -1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-down')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        }
-                        // Если data.voted = 0, обе кнопки остаются без класса voted
-
-                        showMessage('Голос учтен!', 'success');
-                    } else {
-                        showMessage(data.error || 'Ошибка при голосовании', 'error');
-                    }
-                } else {
-                    showMessage('Ошибка сервера', 'error');
-                }
-
-            } catch (error) {
-                showMessage('Ошибка сети', 'error');
-            }
-        });
-    });
-
-    // AJAX отметка как правильного
-    const markCorrectForms = document.querySelectorAll('.correct-form');
-
-    markCorrectForms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const answerCard = this.closest('.answer-card');
-
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    answerCard.classList.add('correct');
-
-                    document.querySelectorAll('.correct-form').forEach(f => {
-                        f.style.display = 'none';
-                    });
-
-                    const correctBadge = document.createElement('div');
-                    correctBadge.className = 'correct-answer';
-                    correctBadge.innerHTML = '<span class="correct-badge">✓ Правильный ответ</span>';
-                    this.parentNode.insertBefore(correctBadge, this);
-                    this.remove();
-
-                    showMessage('Ответ отмечен как правильный!', 'success');
-                } else {
-                    showMessage(data.error || 'Ошибка при отметке ответа', 'error');
-                }
-            })
-            .catch(error => {
-                showMessage('Ошибка при отметке ответа', 'error');
-            });
-        });
-    });
-
-    // AJAX голосование за вопросы
-    const questionVoteForms = document.querySelectorAll('.question-card .vote-form');
-
-    questionVoteForms.forEach(form => {
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const formData = new FormData(this);
-            const url = this.action;
-            const voteValue = this.getAttribute('data-vote-value');
-
-            formData.append('value', voteValue);
-
-            const voteCount = this.closest('.vote-buttons').querySelector('.vote-count');
-            const allVoteBtns = this.closest('.vote-buttons').querySelectorAll('.vote-btn');
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    if (data.success) {
-                        voteCount.textContent = data.new_votes || data.votes;
-
-                        // Сбрасываем все voted классы
-                        allVoteBtns.forEach(btn => btn.classList.remove('voted'));
-
-                        // Если голос снят (voted = 0), не добавляем класс voted
-                        // Если пользователь проголосовал, добавляем класс voted соответствующей кнопке
-                        if (data.voted === 1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-up')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        } else if (data.voted === -1) {
-                            allVoteBtns.forEach(btn => {
-                                if (btn.classList.contains('vote-down')) {
-                                    btn.classList.add('voted');
-                                }
-                            });
-                        }
-                        // Если data.voted = 0, обе кнопки остаются без класса voted
-
-                        showMessage('Голос учтен!', 'success');
-                    } else {
-                        showMessage(data.error || 'Ошибка при голосовании', 'error');
-                    }
-                } else {
-                    showMessage('Ошибка сервера', 'error');
-                }
-
-            } catch (error) {
-                showMessage('Ошибка сети', 'error');
-            }
-        });
-    });
-});
-</script>
-
-<style>
-/* Стили для уведомлений */
-.alerts-container {
-    position: fixed;
-    top: 80px;
-    right: 20px;
-    z-index: 1000;
-    max-width: 400px;
-    width: 100%;
-}
-
-.alert {
-    background: white;
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    border-left: 4px solid #28a745;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: all 0.3s ease;
-}
-
-.alert-success {
-    border-left-color: #28a745;
-    color: #155724;
-    background-color: #d4edda;
-}
-
-.alert-error {
-    border-left-color: #dc3545;
-    color: #721c24;
-    background-color: #f8d7da;
-}
-
-.alert-close {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: 15px;
-    color: inherit;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.alert-close:hover {
-    opacity: 1;
-}
-
-/* Стили для AJAX состояний */
-.vote-btn.voted {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-.vote-btn.voted.vote-up {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.vote-btn.voted.vote-down {
-    background-color: #dc3545;
-    border-color: #dc3545;
-}
-
-.correct-answer {
-    margin-bottom: 10px;
-}
-
-.correct-badge {
-    background-color: #28a745;
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-.answer-card.correct {
-    border-left: 4px solid #28a745;
-    background-color: #f8fff9;
-}
-
-.form-errors {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-.form-errors .error {
-    display: block;
-}
-
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.modal-close, .modal-close-answer {
-    background: none;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-</style>
+<!--TODO: вынести логику голосования в отдельный файл-->
+<script src="{% static 'js/question_detail.js' %}"></script>
 {% endblock %}
