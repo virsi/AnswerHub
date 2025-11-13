@@ -1,0 +1,71 @@
+{% if page.has_other_pages %}
+<div class="pagination">
+    <div class="pagination-info">
+        Страница {{ page.number }} из {{ page.paginator.num_pages }}
+    </div>
+
+    <div class="pagination-controls">
+        {% if page.has_previous %}
+            <a href="?page=1" class="page-link" title="Первая страница">
+                <span class="page-arrow">«</span>
+            </a>
+            <a href="?page={{ page.previous_page_number }}" class="page-link" title="Предыдущая страница">
+                <span class="page-arrow">←</span>
+                <span class="page-text">Назад</span>
+            </a>
+        {% else %}
+            <span class="page-link disabled">
+                <span class="page-arrow">«</span>
+            </span>
+            <span class="page-link disabled">
+                <span class="page-arrow">←</span>
+                <span class="page-text">Назад</span>
+            </span>
+        {% endif %}
+
+        <div class="page-numbers">
+            {% if page.number > 3 %}
+                <a href="?page=1" class="page-link">1</a>
+                {% if page.number > 4 %}
+                    <span class="page-ellipsis">...</span>
+                {% endif %}
+            {% endif %}
+
+            {% for num in page.paginator.page_range %}
+                {% if num >= page.number|add:"-2" and num <= page.number|add:"2" %}
+                    {% if page.number == num %}
+                        <span class="page-link active">{{ num }}</span>
+                    {% else %}
+                        <a href="?page={{ num }}" class="page-link">{{ num }}</a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if page.number < page.paginator.num_pages|add:"-2" %}
+                {% if page.number < page.paginator.num_pages|add:"-3" %}
+                    <span class="page-ellipsis">...</span>
+                {% endif %}
+                <a href="?page={{ page.paginator.num_pages }}" class="page-link">{{ page.paginator.num_pages }}</a>
+            {% endif %}
+        </div>
+
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}" class="page-link" title="Следующая страница">
+                <span class="page-text">Вперед</span>
+                <span class="page-arrow">→</span>
+            </a>
+            <a href="?page={{ page.paginator.num_pages }}" class="page-link" title="Последняя страница">
+                <span class="page-arrow">»</span>
+            </a>
+        {% else %}
+            <span class="page-link disabled">
+                <span class="page-text">Вперед</span>
+                <span class="page-arrow">→</span>
+            </span>
+            <span class="page-link disabled">
+                <span class="page-arrow">»</span>
+            </span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

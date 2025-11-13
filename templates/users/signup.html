@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Регистрация - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>Регистрация</h1>
+        <p class="auth-subtitle">Присоединяйтесь к сообществу AnswerHub</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form class="auth-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    <strong>Ошибка!</strong> Пожалуйста, исправьте ошибки ниже.
+                </div>
+            {% endif %}
+
+            <!-- Электронная почта -->
+            <div class="form-group">
+                <label for="signup-email" class="form-label">{{ form.email.label }}</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                    <div class="form-error show">
+                        {% for error in form.email.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Никнейм -->
+            <div class="form-group">
+                <label for="signup-username" class="form-label">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.help_text %}
+                    <div class="form-hint">{{ form.username.help_text }}</div>
+                {% endif %}
+                {% if form.username.errors %}
+                    <div class="form-error show">
+                        {% for error in form.username.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Пароль -->
+            <div class="form-group">
+                <label for="signup-password" class="form-label">Пароль</label>
+                {{ form.password1 }}
+                <div class="form-hint">
+                    • Минимум 8 символов<br>
+                    • Не используйте простые пароли (123456, password, qwerty и т.д.)<br>
+                    • Рекомендуется использовать буквы, цифры и специальные символы
+                </div>
+                {% if form.password1.errors %}
+                    <div class="form-error show">
+                        {% for error in form.password1.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Подтверждение пароля -->
+            <div class="form-group">
+                <label for="signup-password-confirm" class="form-label">Подтверждение пароля</label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <div class="form-error show">
+                        {% for error in form.password2.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Аватар -->
+            <div class="form-group">
+                <div class="form-label optional">Аватар</div>
+                <div class="file-upload">
+                    {{ form.avatar }}
+                    <label for="signup-avatar" class="btn btn-outline">Выбрать аватар</label>
+                </div>
+                {% if form.avatar.errors %}
+                    <div class="form-error show">
+                        {% for error in form.avatar.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Кнопка регистрации -->
+            <button type="submit" class="btn btn-primary btn-full">Зарегистрироваться</button>
+        </form>
+
+        <div class="auth-links">
+            <p>Уже есть аккаунт? <a href="{% url 'users:login' %}" class="auth-link">Войдите</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

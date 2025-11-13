@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+# Ждем, пока база данных станет доступной
+echo "Waiting for PostgreSQL..."
+while ! nc -z db 5432; do
+  sleep 0.1
+done
+echo "PostgreSQL started"
+
+echo "Running migrations..."
+python manage.py migrate
+
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
+echo "Starting Django development server..."
+python manage.py runserver 0.0.0.0:8000

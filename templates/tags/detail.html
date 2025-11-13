@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Вопросы с тегом [{{ tag.name }}] - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="tag-header-top">
+            <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
+        </div>
+
+        <!-- Заголовок тега -->
+        <div class="tag-header">
+            <span class="tag-badge large">{{ tag.name }}</span>
+            <h1>Вопросы с тегом [{{ tag.name }}]</h1>
+            {% if tag.description %}
+            <p class="tag-description">{{ tag.description }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Список вопросов -->
+        <div class="questions-list">
+            {% for question in questions %}
+            <div class="question-card">
+                <div class="vote-buttons">
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
+                        {% csrf_token %}
+                        <button type="submit" class="vote-btn vote-up">↑</button>
+                    </form>
+
+                    <span class="vote-count">{{ question.votes }}</span>
+
+                    <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
+                        {% csrf_token %}
+                        <button type="submit" class="vote-btn vote-down">↓</button>
+                    </form>
+                    {% else %}
+                    <button type="button" class="vote-btn vote-down disabled">↓</button>
+                    {% endif %}
+                </div>
+
+                <div class="question-content">
+                    <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
+                    <p>{{ question.content|striptags|truncatewords:30 }}</p>
+
+                    <div class="tags">
+                        {% for question_tag in question.tags.all %}
+                        <a href="{% url 'tags:detail' question_tag.name %}" class="tag {% if question_tag.name == tag.name %}active{% endif %}">
+                            {{ question_tag.name }}
+                        </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="meta">
+                        <span>спросил {{ question.created_at|timesince }} назад</span>
+                        <span>{{ question.answer_set.count }} ответов</span>
+                        <span>{{ question.views }} просмотров</span>
+                        <div class="author-info">
+                            <div class="user-avatar-small">
+                                <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                     alt="Аватар {{ question.author.username }}" class="avatar-img">
+                            </div>
+                            <span>{{ question.author.username }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-questions">
+                <h3>Пока нет вопросов с этим тегом</h3>
+                <p>Будьте первым, кто задаст вопрос с тегом "{{ tag.name }}"!</p>
+                <a href="{% url 'questions:ask' %}" class="btn btn-primary">Задать вопрос</a>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if page %}
+            {% include 'includes/pagination.html' with page=page %}
+        {% endif %}
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-card">
+            <h3>Статистика тега</h3>
+            <div class="tag-stats">
+                <!-- <div class="stat-item">
+                    <span class="stat-label">Всего вопросов:</span>
+                    <span class="stat-value">{{ questions_count }}</span>
+                </div> -->
+                <div class="stat-item">
+                    <span class="stat-label">Использований (все время):</span>
+                    <span class="stat-value">{{ tag.usage_count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-card">
+            <h3>Похожие теги</h3>
+            <div class="tags">
+                {% for similar_tag in popular_tags %}
+                    {% if similar_tag.name != tag.name %}
+                    <a href="{% url 'tags:detail' similar_tag.name %}" class="tag">{{ similar_tag.name }}</a>
+                    {% endif %}
+                {% empty %}
+                <span class="no-tags">Нет похожих тегов</span>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</div>
+
+<!--TODO: вынести логику голосования в отдельный файл-->
+<script src="{% static 'js/question_detail.js' %}"></script>
+{% endblock %}

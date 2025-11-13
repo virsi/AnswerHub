@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question.title|truncatechars:15 }} - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <!-- Вопрос -->
+        <div class="question-card">
+            <div class="vote-buttons">
+                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="1">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn vote-up">↑</button>
+                </form>
+
+                <span class="vote-count">{{ question.votes }}</span>
+
+                <form method="post" action="{% url 'questions:vote_question' question.id %}" class="vote-form" data-vote-value="-1">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn vote-down">↓</button>
+                </form>
+            </div>
+
+            <div class="question-content">
+                <h1>{{ question.title }}</h1>
+                <div class="question-body">
+                    {{ question.content|linebreaks }}
+                </div>
+
+                <div class="tags">
+                    {% for tag in question.tags.all %}
+                    <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
+                    {% empty %}
+                    <span class="tag">без тега</span>
+                    {% endfor %}
+                </div>
+
+                <div class="meta">
+                    <span>спросил {{ question.created_at|timesince }} назад</span>
+                    <span>просмотров: {{ question.views }}</span>
+                    <div class="author-info">
+                        {% if question.author %}
+                        <div class="user-avatar-small">
+                            <img src="{% if question.author.avatar %}{{ question.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                 alt="Аватар {{ question.author.username }}" class="avatar-img">
+                        </div>
+                        <span>{{ question.author.username }}</span>
+                        {% else %}
+                        <div class="user-avatar-small">
+                            <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
+                        </div>
+                        <span>Пользователь удален</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ответы -->
+        <div class="answers-header">
+            <h2>{{ question.answers.count }} ответов</h2>
+        </div>
+
+        {% for answer in question.answers.all %}
+        <div class="answer-card {% if answer.is_correct %}correct{% endif %}" id="answer-{{ answer.id }}">
+            <div class="vote-buttons">
+                <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="1">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn vote-up">↑</button>
+                </form>
+
+                <span class="vote-count">{{ answer.votes }}</span>
+
+                <form method="post" action="{% url 'answers:vote' answer.id %}" class="vote-form" data-vote-value="-1">
+                    {% csrf_token %}
+                    <button type="submit" class="vote-btn vote-down">↓</button>
+                </form>
+            </div>
+
+            <div class="answer-content">
+                <div class="answer-body">
+                    {{ answer.content|linebreaks }}
+                </div>
+
+                <div class="answer-meta">
+                    {% if answer.is_correct %}
+                        <span class="correct-badge">✓ Правильный ответ</span>
+                    {% elif question.author == user %}
+                        <!-- Форма AJAX-отметки правильного ответа -->
+                        <form method="post"
+                              action="{% url 'answers:mark_correct' answer.id %}"
+                              class="mark-correct-form"
+                              data-answer-id="{{ answer.id }}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline mark-correct-btn">
+                                Отметить как правильный
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <!-- Кнопка удаления ответа -->
+                    {% if answer.author and user == answer.author %}
+                    <div class="answer-actions">
+                        <button class="btn-text btn-text-danger delete-answer-btn"
+                                data-answer-id="{{ answer.id }}">
+                            Удалить
+                        </button>
+                    </div>
+                    {% endif %}
+
+                    <div class="meta">
+                        <span>ответил {{ answer.created_at|timesince }} назад</span>
+                        <div class="author-info">
+                            {% if answer.author %}
+                            <div class="user-avatar-small">
+                                <img src="{% if answer.author.avatar %}{{ answer.author.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                                     alt="Аватар {{ answer.author.username }}" class="avatar-img">
+                            </div>
+                            <span>{{ answer.author.username }}</span>
+                            {% else %}
+                            <div class="user-avatar-small">
+                                <img src="{% static 'img/avatar-placeholder.jpg' %}" alt="Удаленный пользователь" class="avatar-img">
+                            </div>
+                            <span>Пользователь удален</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="no-answers">
+            <h3>Пока нет ответов</h3>
+            <p>Будьте первым, кто ответит на этот вопрос!</p>
+        </div>
+        {% endfor %}
+
+        <!-- Кнопка удаления вопроса -->
+        {% if question.author and user == question.author %}
+        <div class="delete-action">
+            <button class="btn-text btn-text-danger" id="deleteQuestionBtn">Удалить вопрос</button>
+        </div>
+        {% endif %}
+
+        <!-- Форма добавления ответа -->
+        {% if user.is_authenticated %}
+        <div class="answer-form-card">
+            <h3>Ваш ответ</h3>
+            <form class="answer-form" method="post" action="{% url 'answers:create' question_id=question.id %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <textarea name="content" class="form-textarea" rows="8" placeholder="Введите ваш ответ..." required></textarea>
+                    {% if form.errors.content %}
+                    <div class="form-errors">
+                        {% for error in form.errors.content %}
+                        <span class="form-error show">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                <button type="submit" class="btn btn-primary">Отправить ответ</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="auth-prompt">
+            <p>Чтобы ответить на вопрос, <a href="{% url 'users:login' %}">войдите</a> или <a href="{% url 'users:signup' %}">зарегистрируйтесь</a>.</p>
+        </div>
+        {% endif %}
+    </div>
+
+ <!-- Модальное окно подтверждения удаления вопроса -->
+    {% if user == question.author %}
+    <div id="deleteModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Удаление вопроса</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить вопрос "<strong>{{ question.title }}</strong>"?</p>
+                <p>Это действие нельзя отменить. Все ответы на этот вопрос также будут скрыты.</p>
+            </div>
+            <div class="modal-actions">
+                <form method="post" action="{% url 'questions:delete' question.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить вопрос</button>
+                </form>
+                <button class="btn btn-outline modal-cancel">Отмена</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Модальное окно подтверждения удаления ответа -->
+    {% if user.is_authenticated %}
+    <div id="deleteAnswerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Удаление ответа</h3>
+                <button class="modal-close-answer">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите удалить этот ответ?</p>
+                <p>Это действие нельзя отменить.</p>
+            </div>
+            <div class="modal-actions">
+                <form id="deleteAnswerForm" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Удалить ответ</button>
+                </form>
+                <button class="btn btn-outline modal-cancel-answer">Отмена</button>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <aside class="sidebar">
+        {% include 'includes/sidebar_popular_tags.html' %}
+        {% include 'includes/sidebar_top_users.html' %}
+    </aside>
+</div>
+
+<!-- Добавляем глобальную переменную для URL удаления ответа -->
+<script>
+    // Глобальная переменная для шаблона URL удаления ответа
+    window.answerDeleteUrlTemplate = "{% url 'answers:delete' 0 %}";
+</script>
+
+<!-- Подключаем внешний JavaScript файл -->
+<script src="{% static 'js/question_detail.js' %}"></script>
+{% endblock %}

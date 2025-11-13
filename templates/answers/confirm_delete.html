@@ -1,0 +1,46 @@
+<!-- templates/answers/confirm_delete.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Удалить ответ - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="delete-confirmation">
+            <h1>Удаление ответа</h1>
+
+            <div class="warning-message">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-content">
+                    <h3>Вы уверены, что хотите удалить этот ответ?</h3>
+                    <p>Это действие нельзя отменить.</p>
+                </div>
+            </div>
+
+            <div class="answer-preview">
+                <h2>Ответ на вопрос: {{ answer.question.title }}</h2>
+                <div class="answer-content-preview">
+                    {{ answer.content|striptags|truncatewords:50 }}
+                </div>
+                <div class="meta">
+                    <span>Создан: {{ answer.created_at|date:"d.m.Y H:i" }}</span>
+                    <span>Голосов: {{ answer.votes }}</span>
+                </div>
+            </div>
+
+            <div class="confirmation-actions">
+                <form method="post" class="delete-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-large">
+                        🗑️ Удалить ответ
+                    </button>
+                </form>
+                <a href="{% url 'questions:detail' answer.question.id %}" class="btn btn-outline">
+                    Отмена
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
