@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Редактировать вопрос{% else %}Задать вопрос{% endif %} - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="ask-form-container">
+            <h1>{% if form.instance.pk %}Редактировать вопрос{% else %}Задать вопрос{% endif %}</h1>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                        <button type="button" class="alert-close" aria-label="Закрыть">
+                            ×
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form class="ask-form" method="post">
+                {% csrf_token %}
+
+                <!-- Заголовок -->
+                <div class="form-group">
+                    <label for="title" class="form-label">{{ form.title.label }}</label>
+                    <div class="form-hint">{{ form.title.help_text }}</div>
+                    {{ form.title }}
+                    {% if form.title.errors %}
+                        <div class="form-error show">
+                            {% for error in form.title.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Текст вопроса -->
+                <div class="form-group">
+                    <label for="question-body" class="form-label">{{ form.content.label }}</label>
+                    <div class="form-hint">{{ form.content.help_text }}</div>
+                    {{ form.content }}
+                    {% if form.content.errors %}
+                        <div class="form-error show">
+                            {% for error in form.content.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Теги -->
+                <div class="form-group">
+                    <label for="tags" class="form-label optional">{{ form.tags_input.label }}</label>
+                    <div class="form-hint">{{ form.tags_input.help_text }}</div>
+                    {{ form.tags_input }}
+                    {% if form.tags_input.errors %}
+                        <div class="form-error show">
+                            {% for error in form.tags_input.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="tags-preview" id="tags-preview">
+                        <!-- Здесь будут отображаться выбранные теги -->
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">
+                        {% if form.instance.pk %}Обновить вопрос{% else %}Опубликовать вопрос{% endif %}
+                    </button>
+                    <a href="{% if form.instance.pk %}{% url 'questions:detail' form.instance.pk %}{% else %}{% url 'questions:list' %}{% endif %}"
+                       class="btn btn-outline">Отмена</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <aside class="sidebar">
+        {% include 'includes/sidebar_popular_tags.html' %}
+
+        <div class="sidebar-card">
+            <h3>Как правильно задать вопрос</h3>
+            <div class="tips-list">
+                <div class="tip-item">
+                    <strong>Опишите проблему подробно</strong>
+                    <p>Включите всю необходимую информацию для воспроизведения проблемы</p>
+                </div>
+                <div class="tip-item">
+                    <strong>Добавьте код</strong>
+                    <p>Если вопрос связан с кодом, включите соответствующие фрагменты</p>
+                </div>
+                <div class="tip-item">
+                    <strong>Выберите правильные теги</strong>
+                    <p>Это поможет вашему вопросу найти нужную аудиторию</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/alert-close.js' %}"></script>
+<script src="{% static 'js/tags-preview.js' %}"></script>
+{% endblock %}

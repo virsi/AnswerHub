@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Поиск: {{ query }} - AnswerHub{% endblock %}
+
+{% block content %}
+<div class="main-layout">
+    <div class="content">
+        <div class="search-results-header">
+            <h1>Результаты поиска</h1>
+
+            {% if query %}
+                <p class="search-query">По запросу: "<strong>{{ query }}</strong>"</p>
+
+                <div class="search-stats">
+                    <span>Найдено: </span>
+                    <span class="stat-item">{{ questions_count }} вопросов</span>
+                    <span class="stat-item">{{ tags_count }} тегов</span>
+                    <span class="stat-item">{{ answers_count }} ответов</span>
+                </div>
+            {% else %}
+                <p class="search-empty">Введите поисковый запрос</p>
+            {% endif %}
+        </div>
+
+        {% if query %}
+            <!-- Результаты: Вопросы -->
+            {% if results.questions %}
+            <section class="search-section">
+                <h2>Вопросы</h2>
+                <div class="questions-list">
+                    {% for question in page %}
+                    <div class="question-card">
+                        <div class="vote-buttons">
+                            <span class="vote-count">{{ question.votes }}</span>
+                        </div>
+                        <div class="question-content">
+                            <h3><a href="{% url 'questions:detail' question.id %}">{{ question.title }}</a></h3>
+                            <p>{{ question.content|striptags|truncatewords:30 }}</p>
+                            <div class="tags">
+                                {% for tag in question.tags.all %}
+                                <a href="{% url 'tags:detail' tag.name %}" class="tag">{{ tag.name }}</a>
+                                {% endfor %}
+                            </div>
+                            <div class="meta">
+                                <span>{{ question.created_at|timesince }} назад</span>
+                                <span>{{ question.answer_set.count }} ответов</span>
+                                <span>{{ question.views }} просмотров</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% include 'includes/pagination.html' with page=page %}
+            </section>
+            {% endif %}
+
+            <!-- Результаты: Теги -->
+            {% if results.tags %}
+            <section class="search-section">
+                <h2>Теги</h2>
+                <div class="tags">
+                    {% for tag in results.tags %}
+                    <a href="{% url 'tags:detail' tag.name %}" class="tag large">{{ tag.name }}</a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            <!-- Результаты: Ответы -->
+            {% if results.answers %}
+            <section class="search-section">
+                <h2>Ответы</h2>
+                <div class="answers-list">
+                    {% for answer in results.answers %}
+                    <div class="answer-card">
+                        <div class="answer-content">
+                            <p>{{ answer.content|striptags|truncatewords:50 }}</p>
+                            <div class="meta">
+                                <span>В ответ на:
+                                    <a href="{% url 'questions:detail' answer.question.id %}#answer-{{ answer.id }}">
+                                        {{ answer.question.title }}
+                                    </a>
+                                </span>
+                                <span>{{ answer.created_at|timesince }} назад</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+            {% if not results.questions and not results.tags and not results.answers %}
+            <div class="no-results">
+                <h3>Ничего не найдено</h3>
+                <p>Попробуйте изменить поисковый запрос или проверьте орфографию.</p>
+            </div>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <aside class="sidebar">
+        <div class="sidebar-card">
+            <h3>Советы по поиску</h3>
+            <div class="tips-list">
+                <div class="tip-item">
+                    <strong>Используйте ключевые слова</strong>
+                    <p>Вводите конкретные термины, связанные с вашей проблемой</p>
+                </div>
+                <div class="tip-item">
+                    <strong>Проверьте теги</strong>
+                    <p>Поиск по тегам может помочь найти нужную тему</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+</div>
+{% endblock %}

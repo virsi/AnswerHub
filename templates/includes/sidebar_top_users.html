@@ -1,0 +1,18 @@
+{% load static %}
+<div class="sidebar-card">
+    <h3>Лучшие пользователи</h3>
+    <div class="users-list">
+        {% for user in top_users %}
+        <div class="user-item">
+            <div class="author-info">
+                <div class="user-avatar-small">
+                    <img src="{% if user.avatar %}{{ user.avatar.url }}{% else %}{% static 'img/avatar-placeholder.jpg' %}{% endif %}"
+                         alt="Аватар {{ user.username }}" class="avatar-img">
+                </div>
+                <span class="user-name">{{ user.username }}</span>
+            </div>
+            <span class="user-rep">{{ user.reputation }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
